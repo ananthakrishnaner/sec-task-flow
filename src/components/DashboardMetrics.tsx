@@ -1,0 +1,78 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TaskMetrics } from "@/types";
+import { Activity, CheckCircle, Clock, AlertTriangle, TrendingUp } from "lucide-react";
+
+interface DashboardMetricsProps {
+  metrics: TaskMetrics;
+}
+
+export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+      <Card className="bg-card-elevated shadow-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>
+          <Activity className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-foreground">{metrics.totalTasks}</div>
+          <p className="text-xs text-muted-foreground">
+            {metrics.projectTasksCount} project • {metrics.adHocTasksCount} ad-hoc
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card-elevated shadow-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+          <CheckCircle className="h-4 w-4 text-success" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-success">{metrics.completedTasks}</div>
+          <p className="text-xs text-muted-foreground">
+            {metrics.completionRate.toFixed(1)}% completion rate
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card-elevated shadow-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">In Progress</CardTitle>
+          <Clock className="h-4 w-4 text-primary" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-primary">{metrics.inProgressTasks}</div>
+          <p className="text-xs text-muted-foreground">
+            Active work items
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card-elevated shadow-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Blocked</CardTitle>
+          <AlertTriangle className="h-4 w-4 text-destructive" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-destructive">{metrics.blockedTasks}</div>
+          <p className="text-xs text-muted-foreground">
+            Requires attention
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-card-elevated shadow-card border-border">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium text-muted-foreground">Weekly Trend</CardTitle>
+          <TrendingUp className="h-4 w-4 text-accent" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold text-accent">{metrics.weeklyCompletions.reduce((a, b) => a + b, 0)}</div>
+          <p className="text-xs text-muted-foreground">
+            This week completed
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

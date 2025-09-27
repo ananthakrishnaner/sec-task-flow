@@ -2,39 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Cybersecurity Efficiency Tracker Design System
+All colors MUST be HSL for proper theming
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core backgrounds - Professional dark theme */
+    --background: 222 23% 7%;
+    --foreground: 210 40% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Card system - Layered depth */
+    --card: 222 20% 11%;
+    --card-foreground: 210 40% 95%;
+    --card-elevated: 222 18% 14%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Interactive surfaces */
+    --popover: 222 20% 11%;
+    --popover-foreground: 210 40% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Cybersecurity blue */
+    --primary: 207 89% 54%;
+    --primary-foreground: 222 23% 7%;
+    --primary-glow: 207 89% 64%;
+    --primary-muted: 207 45% 35%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Professional gray */
+    --secondary: 222 15% 18%;
+    --secondary-foreground: 210 30% 85%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted states */
+    --muted: 222 15% 15%;
+    --muted-foreground: 215 15% 60%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Electric cyan for highlights */
+    --accent: 180 100% 50%;
+    --accent-foreground: 222 23% 7%;
+    --accent-muted: 180 45% 35%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status colors */
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 95%;
+    --warning: 38 92% 50%;
+    --warning-foreground: 222 23% 7%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Interactive elements */
+    --border: 222 15% 20%;
+    --input: 222 15% 18%;
+    --ring: 207 89% 54%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(207 89% 64%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 100% 50%), hsl(195 100% 60%));
+    --gradient-surface: linear-gradient(180deg, hsl(222 20% 11%), hsl(222 18% 9%));
+    --gradient-glow: radial-gradient(circle at center, hsl(207 89% 54% / 0.15), transparent 70%);
+
+    /* Shadows and effects */
+    --shadow-card: 0 4px 12px -2px hsl(222 23% 4% / 0.8);
+    --shadow-elevated: 0 8px 24px -4px hsl(222 23% 4% / 0.9);
+    --shadow-glow: 0 0 20px hsl(207 89% 54% / 0.3);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
