@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
 import { ProjectTaskEditForm } from "@/components/ProjectTaskEditForm";
-import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit } from "lucide-react";
+import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { 
   DndContext, 
@@ -38,11 +38,12 @@ interface ProjectTasksListProps {
 interface SortableTaskItemProps {
   task: ProjectTask;
   onUpdateTask: (task: ProjectTask) => void;
+  onDeleteTask: (taskId: string) => void;
 }
 
 const statusOptions: TaskStatus[] = ["To Do", "In Progress", "Blocked", "Testing", "Complete"];
 
-const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
+const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItemProps) => {
   const [showDailyLog, setShowDailyLog] = useState(false);
   const [dailyLogNote, setDailyLogNote] = useState("");
   const [selectedLogStatus, setSelectedLogStatus] = useState<TaskStatus>(task.status);
@@ -122,13 +123,13 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
       style={style}
       className="bg-card shadow-card border-border mb-4 hover:shadow-elevated transition-all duration-300"
     >
-      <CardHeader 
-        {...attributes} 
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing bg-gradient-surface border-b border-border"
-      >
+      <CardHeader className="bg-gradient-surface border-b border-border">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div 
+            {...attributes} 
+            {...listeners}
+            className="flex items-center gap-3 cursor-grab active:cursor-grabbing flex-1 mr-4"
+          >
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded bg-primary/20 text-primary text-xs flex items-center justify-center font-bold">
                 {task.priority}
@@ -137,7 +138,7 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
             </div>
             <TaskStatusBadge status={task.status} />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {task.securitySignOff && (
               <Badge className="bg-success text-success-foreground">
                 <CheckCircle className="h-3 w-3 mr-1" />
@@ -147,20 +148,39 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setIsEditing(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(true);
+              }}
               className="border-border text-foreground hover:bg-muted"
             >
               <Edit className="h-4 w-4 mr-1" />
-              Edit Task
+              Edit
             </Button>
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setShowDailyLog(!showDailyLog)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowDailyLog(!showDailyLog);
+              }}
               className="border-border text-foreground hover:bg-muted"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Log Update
+              Log
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (window.confirm('Are you sure you want to delete this task?')) {
+                  onDeleteTask(task.id);
+                }
+              }}
+              className="border-border text-destructive hover:bg-destructive/10 hover:border-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           </div>
         </div>
@@ -349,6 +369,11 @@ export const ProjectTasksList = ({ tasks, onUpdateTasks }: ProjectTasksListProps
     onUpdateTasks(updatedTasks);
   };
 
+  const handleDeleteTask = (taskId: string) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    onUpdateTasks(updatedTasks);
+  };
+
   if (tasks.length === 0) {
     return (
       <Card className="bg-card shadow-card border-border">
@@ -385,6 +410,7 @@ export const ProjectTasksList = ({ tasks, onUpdateTasks }: ProjectTasksListProps
               key={task.id}
               task={task}
               onUpdateTask={handleUpdateTask}
+              onDeleteTask={handleDeleteTask}
             />
           ))}
         </SortableContext>
