@@ -490,7 +490,7 @@ const Index = () => {
         {/* Task Management Tabs */}
         <Tabs defaultValue="project" className="space-y-6">
           <div className="flex items-center justify-between">
-            <TabsList className="bg-card border border-border">
+            <TabsList className="bg-card border border-border grid grid-cols-4 w-full">
               <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Project Tasks
               </TabsTrigger>
@@ -499,7 +499,7 @@ const Index = () => {
               </TabsTrigger>
               <TabsTrigger value="detailed" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                 <BarChart3 className="h-4 w-4 mr-2" />
-                Detailed Progress
+                Progress
               </TabsTrigger>
               <TabsTrigger value="analytics" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                 <BarChart3 className="h-4 w-4 mr-2" />
