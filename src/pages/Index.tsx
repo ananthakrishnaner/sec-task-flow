@@ -8,13 +8,14 @@ import { ProjectTaskForm } from "@/components/ProjectTaskForm";
 import { AdHocTaskForm } from "@/components/AdHocTaskForm";
 import { ProjectTasksList } from "@/components/ProjectTasksList";
 import { AdHocTasksList } from "@/components/AdHocTasksList";
+import { Settings } from "@/pages/Settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Shield, Plus, BarChart3, Download, Settings, FileSpreadsheet, FileText } from "lucide-react";
+import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -24,6 +25,7 @@ const Index = () => {
   const [showAdHocForm, setShowAdHocForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
+  const [currentView, setCurrentView] = useState<'dashboard' | 'settings'>('dashboard');
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     includeProjectTasks: true,
     includeAdHocTasks: true,
@@ -230,24 +232,20 @@ const Index = () => {
     }
   };
 
-  const handleDownloadJsonBackup = () => {
-    try {
-      storageService.downloadJsonBackup();
-      toast({
-        title: "Backup Downloaded",
-        description: "JSON backup file has been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error('Error downloading backup:', error);
-      toast({
-        title: "Download Failed",
-        description: "Failed to download backup. Please try again.",
-        variant: "destructive",
-      });
-    }
+  const handleDataImported = () => {
+    // Refresh all data after import
+    loadData();
   };
 
   const metrics = calculateMetrics();
+
+  // Show settings view
+  if (currentView === 'settings') {
+    return <Settings 
+      onDataImported={handleDataImported} 
+      onGoBack={() => setCurrentView('dashboard')}
+    />;
+  }
 
   if (isLoading) {
     return (
@@ -364,18 +362,10 @@ const Index = () => {
               
               <Button 
                 variant="outline"
-                onClick={handleDownloadJsonBackup}
+                onClick={() => setCurrentView('settings')}
                 className="border-border text-foreground hover:bg-muted"
               >
-                <Download className="h-4 w-4 mr-2" />
-                JSON Backup
-              </Button>
-              
-              <Button 
-                variant="outline"
-                className="border-border text-foreground hover:bg-muted"
-              >
-                <Settings className="h-4 w-4 mr-2" />
+                <SettingsIcon className="h-4 w-4 mr-2" />
                 Settings
               </Button>
             </div>

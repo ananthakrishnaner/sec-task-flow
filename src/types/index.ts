@@ -45,3 +45,12 @@ export interface TaskMetrics {
   weeklyCompletions: number[];
   statusDistribution: Record<TaskStatus, number>;
 }
+
+export interface TaskData {
+  projectTasks: ProjectTask[];
+  adHocTasks: AdHocTask[];
+  metadata: {
+    lastUpdated: string;
+    version: string;
+  };
+}

@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { AdHocTask, TaskStatus } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
-import { Calendar, Zap, Trash2 } from "lucide-react";
+import { AdHocTaskEditForm } from "@/components/AdHocTaskEditForm";
+import { Calendar, Zap, Trash2, Edit } from "lucide-react";
 import { format } from "date-fns";
 
 interface AdHocTasksListProps {
@@ -14,6 +16,8 @@ interface AdHocTasksListProps {
 const statusOptions: TaskStatus[] = ["To Do", "In Progress", "Blocked", "Testing", "Complete"];
 
 export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) => {
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
     const updatedTasks = tasks.map(task =>
       task.id === taskId
@@ -26,6 +30,14 @@ export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) =>
   const handleDeleteTask = (taskId: string) => {
     const updatedTasks = tasks.filter(task => task.id !== taskId);
     onUpdateTasks(updatedTasks);
+  };
+
+  const handleEditTask = (updatedTask: AdHocTask) => {
+    const updatedTasks = tasks.map(task =>
+      task.id === updatedTask.id ? updatedTask : task
+    );
+    onUpdateTasks(updatedTasks);
+    setEditingTaskId(null);
   };
 
   if (tasks.length === 0) {
@@ -53,12 +65,28 @@ export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) =>
       
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {tasks.map((task) => (
-          <Card key={task.id} className="bg-card shadow-card border-border hover:shadow-elevated transition-all duration-300">
+          <div key={task.id}>
+            <AdHocTaskEditForm
+              task={task}
+              onSave={handleEditTask}
+              onCancel={() => setEditingTaskId(null)}
+              isVisible={editingTaskId === task.id}
+            />
+            {editingTaskId !== task.id && (
+          <Card className="bg-card shadow-card border-border hover:shadow-elevated transition-all duration-300">
             <CardHeader className="bg-gradient-accent/5 border-b border-border">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-foreground">{task.taskName}</CardTitle>
                 <div className="flex items-center gap-2">
                   <TaskStatusBadge status={task.status} />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setEditingTaskId(task.id)}
+                    className="text-foreground hover:bg-muted"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
@@ -113,6 +141,8 @@ export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) =>
               </div>
             </CardContent>
           </Card>
+            )}
+          </div>
         ))}
       </div>
     </div>

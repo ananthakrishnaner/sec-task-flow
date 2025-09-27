@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
+import { ProjectTaskEditForm } from "@/components/ProjectTaskEditForm";
 import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { 
@@ -45,6 +46,7 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
   const [showDailyLog, setShowDailyLog] = useState(false);
   const [dailyLogNote, setDailyLogNote] = useState("");
   const [selectedLogStatus, setSelectedLogStatus] = useState<TaskStatus>(task.status);
+  const [isEditing, setIsEditing] = useState(false);
 
   const {
     attributes,
@@ -102,6 +104,11 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
     setShowDailyLog(false);
   };
 
+  const handleEditTask = (updatedTask: ProjectTask) => {
+    onUpdateTask(updatedTask);
+    setIsEditing(false);
+  };
+
   return (
     <Card 
       ref={setNodeRef} 
@@ -133,6 +140,15 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
             <Button
               size="sm"
               variant="outline"
+              onClick={() => setIsEditing(true)}
+              className="border-border text-foreground hover:bg-muted"
+            >
+              <Edit className="h-4 w-4 mr-1" />
+              Edit Task
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setShowDailyLog(!showDailyLog)}
               className="border-border text-foreground hover:bg-muted"
             >
@@ -143,6 +159,16 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
         </div>
       </CardHeader>
 
+      {/* Edit Form */}
+      <ProjectTaskEditForm
+        task={task}
+        onSave={handleEditTask}
+        onCancel={() => setIsEditing(false)}
+        isVisible={isEditing}
+      />
+
+      {!isEditing && (
+        <>
       <CardContent className="pt-4 space-y-4">
         <p className="text-muted-foreground">{task.description}</p>
         
@@ -278,6 +304,8 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
           </div>
         )}
       </CardContent>
+        </>
+      )}
     </Card>
   );
 };
