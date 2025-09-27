@@ -1,50 +1,170 @@
 import { ProjectTask, AdHocTask } from '@/types';
 
-const PROJECT_TASKS_KEY = 'cet_project_tasks';
-const ADHOC_TASKS_KEY = 'cet_adhoc_tasks';
+interface TaskData {
+  projectTasks: ProjectTask[];
+  adHocTasks: AdHocTask[];
+  metadata: {
+    lastUpdated: string;
+    version: string;
+  };
+}
+
+const JSON_FILE_PATH = '/data/tasks.json';
 
 export const storageService = {
-  // Project Tasks
-  getProjectTasks(): ProjectTask[] {
+  // Load all data from JSON file
+  async loadData(): Promise<TaskData> {
     try {
-      const tasks = localStorage.getItem(PROJECT_TASKS_KEY);
-      return tasks ? JSON.parse(tasks) : [];
+      const response = await fetch(JSON_FILE_PATH);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error loading data from JSON file:', error);
+      // Return empty structure if file doesn't exist or has errors
+      return {
+        projectTasks: [],
+        adHocTasks: [],
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          version: "1.0.0"
+        }
+      };
+    }
+  },
+
+  // Save all data to JSON file (simulation - in real app would need backend)
+  async saveData(data: TaskData): Promise<void> {
+    try {
+      // Note: In a real browser environment, we can't write to files directly
+      // This would typically require a backend API endpoint
+      // For now, we'll fall back to localStorage and also prepare the data for download
+      const updatedData = {
+        ...data,
+        metadata: {
+          ...data.metadata,
+          lastUpdated: new Date().toISOString()
+        }
+      };
+      
+      // Store in localStorage as backup
+      localStorage.setItem('cet_data_backup', JSON.stringify(updatedData));
+      
+      // In a real implementation, this would be:
+      // await fetch('/api/save-tasks', { method: 'POST', body: JSON.stringify(updatedData) });
+      
+      console.log('Data saved successfully');
+    } catch (error) {
+      console.error('Error saving data:', error);
+      throw error;
+    }
+  },
+
+  // Project Tasks
+  async getProjectTasks(): Promise<ProjectTask[]> {
+    try {
+      // Try to load from localStorage backup first for immediate access
+      const backup = localStorage.getItem('cet_data_backup');
+      if (backup) {
+        const data = JSON.parse(backup);
+        return data.projectTasks || [];
+      }
+      
+      const data = await this.loadData();
+      return data.projectTasks;
     } catch (error) {
       console.error('Error loading project tasks:', error);
       return [];
     }
   },
 
-  saveProjectTasks(tasks: ProjectTask[]): void {
+  async saveProjectTasks(tasks: ProjectTask[]): Promise<void> {
     try {
-      localStorage.setItem(PROJECT_TASKS_KEY, JSON.stringify(tasks));
+      const currentData = await this.loadData();
+      const updatedData = {
+        ...currentData,
+        projectTasks: tasks
+      };
+      await this.saveData(updatedData);
     } catch (error) {
       console.error('Error saving project tasks:', error);
+      throw error;
     }
   },
 
   // Ad-Hoc Tasks
-  getAdHocTasks(): AdHocTask[] {
+  async getAdHocTasks(): Promise<AdHocTask[]> {
     try {
-      const tasks = localStorage.getItem(ADHOC_TASKS_KEY);
-      return tasks ? JSON.parse(tasks) : [];
+      // Try to load from localStorage backup first for immediate access
+      const backup = localStorage.getItem('cet_data_backup');
+      if (backup) {
+        const data = JSON.parse(backup);
+        return data.adHocTasks || [];
+      }
+      
+      const data = await this.loadData();
+      return data.adHocTasks;
     } catch (error) {
       console.error('Error loading ad-hoc tasks:', error);
       return [];
     }
   },
 
-  saveAdHocTasks(tasks: AdHocTask[]): void {
+  async saveAdHocTasks(tasks: AdHocTask[]): Promise<void> {
     try {
-      localStorage.setItem(ADHOC_TASKS_KEY, JSON.stringify(tasks));
+      const currentData = await this.loadData();
+      const updatedData = {
+        ...currentData,
+        adHocTasks: tasks
+      };
+      await this.saveData(updatedData);
     } catch (error) {
       console.error('Error saving ad-hoc tasks:', error);
+      throw error;
     }
   },
 
+  // Get all data for export
+  async getAllData(): Promise<TaskData> {
+    return await this.loadData();
+  },
+
   // Clear all data
-  clearAllData(): void {
-    localStorage.removeItem(PROJECT_TASKS_KEY);
-    localStorage.removeItem(ADHOC_TASKS_KEY);
+  async clearAllData(): Promise<void> {
+    const emptyData: TaskData = {
+      projectTasks: [],
+      adHocTasks: [],
+      metadata: {
+        lastUpdated: new Date().toISOString(),
+        version: "1.0.0"
+      }
+    };
+    await this.saveData(emptyData);
+    localStorage.removeItem('cet_data_backup');
+  },
+
+  // Download JSON backup
+  downloadJsonBackup(): void {
+    try {
+      const backup = localStorage.getItem('cet_data_backup');
+      if (!backup) {
+        throw new Error('No backup data available');
+      }
+      
+      const blob = new Blob([backup], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `cet-backup-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading JSON backup:', error);
+      throw error;
+    }
   }
 };
