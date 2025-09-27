@@ -376,11 +376,11 @@ const Index = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-primary animate-pulse"></div>
-          <h2 className="text-xl font-semibold text-foreground mb-2">Loading CET...</h2>
-          <p className="text-muted-foreground">Initializing your cybersecurity tracker</p>
-        </div>
+          <div className="text-center">
+            <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-primary animate-pulse shadow-glow"></div>
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">TRACKER</h2>
+            <p className="text-muted-foreground font-medium">Initializing Advanced Task Management...</p>
+          </div>
       </div>
     );
   }
@@ -396,11 +396,11 @@ const Index = () => {
                 <Shield className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  Cybersecurity Efficiency Tracker
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  TRACKER
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Real-time task management and reporting
+                <p className="text-sm text-muted-foreground font-medium">
+                  Advanced Task Management System
                 </p>
               </div>
             </div>

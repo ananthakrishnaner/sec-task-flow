@@ -14,6 +14,14 @@ const COLORS = {
   'Complete': 'hsl(var(--success))'
 };
 
+const ENHANCED_COLORS = {
+  'To Do': '#64748b',
+  'In Progress': '#3b82f6', 
+  'Blocked': '#ef4444',
+  'Testing': '#f59e0b',
+  'Complete': '#10b981'
+};
+
 export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
   const statusData = Object.entries(metrics.statusDistribution).map(([status, count]) => ({
     name: status,
@@ -33,12 +41,15 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      <Card className="bg-card shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Task Status Distribution</CardTitle>
+      <Card className="bg-gradient-to-br from-card to-card-elevated shadow-elevated border-border hover:shadow-glow transition-all duration-300">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-primary"></div>
+            Task Status Distribution
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={statusData}
@@ -46,49 +57,90 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={60}
+                outerRadius={75}
+                innerRadius={30}
                 fill="#8884d8"
                 dataKey="value"
+                stroke="hsl(var(--background))"
+                strokeWidth={2}
               >
                 {statusData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={ENHANCED_COLORS[entry.name as keyof typeof ENHANCED_COLORS] || entry.color} 
+                  />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--shadow-card)'
+                }} 
+              />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      <Card className="bg-card shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Weekly Completions</CardTitle>
+      <Card className="bg-gradient-to-br from-card to-card-elevated shadow-elevated border-border hover:shadow-glow transition-all duration-300">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-accent"></div>
+            Weekly Completions Trend
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="week" stroke="hsl(var(--muted-foreground))" />
-              <YAxis stroke="hsl(var(--muted-foreground))" />
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={weeklyData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
+              <XAxis 
+                dataKey="week" 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={12}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
+              <YAxis 
+                stroke="hsl(var(--muted-foreground))" 
+                fontSize={12}
+                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+              />
               <Tooltip 
                 contentStyle={{ 
                   backgroundColor: 'hsl(var(--card))', 
                   border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px'
+                  borderRadius: '8px',
+                  boxShadow: 'var(--shadow-card)'
                 }} 
               />
-              <Bar dataKey="completions" fill="hsl(var(--primary))" />
+              <Bar 
+                dataKey="completions" 
+                fill="url(#barGradient)" 
+                radius={[4, 4, 0, 0]}
+                stroke="hsl(var(--primary))"
+                strokeWidth={1}
+              />
+              <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={1} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.6} />
+                </linearGradient>
+              </defs>
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
-      <Card className="bg-card shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground">Task Type Breakdown</CardTitle>
+      <Card className="bg-gradient-to-br from-card to-card-elevated shadow-elevated border-border hover:shadow-glow transition-all duration-300">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-primary to-accent"></div>
+            Task Type Analysis
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <PieChart>
               <Pie
                 data={taskTypeData}
@@ -96,15 +148,25 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
                 cy="50%"
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={60}
+                outerRadius={75}
+                innerRadius={35}
                 fill="#8884d8"
                 dataKey="value"
+                stroke="hsl(var(--background))"
+                strokeWidth={3}
               >
                 {taskTypeData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'hsl(var(--card))', 
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '8px',
+                  boxShadow: 'var(--shadow-card)'
+                }} 
+              />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
