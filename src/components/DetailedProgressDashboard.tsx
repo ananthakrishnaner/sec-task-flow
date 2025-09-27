@@ -42,9 +42,12 @@ interface DetailedProgressDashboardProps {
 
 interface TaskFilter {
   status: TaskStatus | 'all';
-  timeframe: 'all' | 'this-week' | 'last-week' | 'this-month';
+  timeframe: 'all' | 'this-week' | 'last-week' | 'this-month' | 'custom';
   squad: string;
   search: string;
+  startDate: string;
+  endDate: string;
+  searchType: 'task-name' | 'description' | 'both';
 }
 
 const COLORS = {
@@ -61,7 +64,10 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
     status: 'all',
     timeframe: 'this-week',
     squad: 'all',
-    search: ''
+    search: '',
+    startDate: '',
+    endDate: '',
+    searchType: 'both'
   });
 
   // Get unique squads for filter
@@ -82,10 +88,26 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
       // Squad filter (only for project tasks)
       if (filter.squad !== 'all' && 'squadName' in task && task.squadName !== filter.squad) return false;
       
-      // Search filter
-      if (filter.search && !task.taskName.toLowerCase().includes(filter.search.toLowerCase())) return false;
+      // Search filter with enhanced options
+      if (filter.search) {
+        const searchLower = filter.search.toLowerCase();
+        const matchesTaskName = task.taskName.toLowerCase().includes(searchLower);
+        const matchesDescription = task.description.toLowerCase().includes(searchLower);
+        
+        switch (filter.searchType) {
+          case 'task-name':
+            if (!matchesTaskName) return false;
+            break;
+          case 'description':
+            if (!matchesDescription) return false;
+            break;
+          case 'both':
+            if (!matchesTaskName && !matchesDescription) return false;
+            break;
+        }
+      }
       
-      // Timeframe filter
+      // Timeframe filter with custom date range support
       if (filter.timeframe !== 'all') {
         const taskDate = new Date(task.updatedAt);
         const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -104,6 +126,13 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
             const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             return isWithinInterval(taskDate, { start: monthStart, end: monthEnd });
+          case 'custom':
+            if (filter.startDate && filter.endDate) {
+              const customStart = new Date(filter.startDate);
+              const customEnd = new Date(filter.endDate);
+              return isWithinInterval(taskDate, { start: customStart, end: customEnd });
+            }
+            return true;
         }
       }
       
@@ -194,9 +223,9 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Status</label>
+              <label className="text-sm font-medium text-muted-foreground">Status</label>
               <Select 
                 value={filter.status} 
                 onValueChange={(value: TaskStatus | 'all') => setFilter(prev => ({ ...prev, status: value }))}
@@ -216,10 +245,10 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Time Period</label>
+              <label className="text-sm font-medium text-muted-foreground">Time Period</label>
               <Select 
                 value={filter.timeframe} 
-                onValueChange={(value: 'all' | 'this-week' | 'last-week' | 'this-month') => 
+                onValueChange={(value: 'all' | 'this-week' | 'last-week' | 'this-month' | 'custom') => 
                   setFilter(prev => ({ ...prev, timeframe: value }))
                 }
               >
@@ -231,12 +260,37 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
                   <SelectItem value="this-week">This Week</SelectItem>
                   <SelectItem value="last-week">Last Week</SelectItem>
                   <SelectItem value="this-month">This Month</SelectItem>
+                  <SelectItem value="custom">Custom Range</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
+            {filter.timeframe === 'custom' && (
+              <>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">Start Date</label>
+                  <Input
+                    type="date"
+                    value={filter.startDate}
+                    onChange={(e) => setFilter(prev => ({ ...prev, startDate: e.target.value }))}
+                    className="bg-input border-border"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-muted-foreground">End Date</label>
+                  <Input
+                    type="date"
+                    value={filter.endDate}
+                    onChange={(e) => setFilter(prev => ({ ...prev, endDate: e.target.value }))}
+                    className="bg-input border-border"
+                  />
+                </div>
+              </>
+            )}
             
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Squad</label>
+              <label className="text-sm font-medium text-muted-foreground">Squad</label>
               <Select 
                 value={filter.squad} 
                 onValueChange={(value: string) => setFilter(prev => ({ ...prev, squad: value }))}
@@ -254,7 +308,26 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Search</label>
+              <label className="text-sm font-medium text-muted-foreground">Search In</label>
+              <Select 
+                value={filter.searchType} 
+                onValueChange={(value: 'task-name' | 'description' | 'both') => 
+                  setFilter(prev => ({ ...prev, searchType: value }))
+                }
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="both">Task Name & Description</SelectItem>
+                  <SelectItem value="task-name">Task Name Only</SelectItem>
+                  <SelectItem value="description">Description Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-muted-foreground">Search</label>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -267,8 +340,8 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             </div>
             
             <div className="space-y-2">
-              <label className="text-sm text-muted-foreground">Results</label>
-              <div className="text-lg font-semibold text-foreground bg-muted px-3 py-2 rounded-md">
+              <label className="text-sm font-medium text-muted-foreground">Results</label>
+              <div className="text-lg font-bold text-foreground bg-gradient-primary/10 px-4 py-2 rounded-md border border-primary/20">
                 {filteredTasks.length} tasks
               </div>
             </div>

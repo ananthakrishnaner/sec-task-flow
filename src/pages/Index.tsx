@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft } from "lucide-react";
+import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
@@ -274,6 +274,25 @@ const Index = () => {
     }
   };
 
+  const handleExportToPDF = () => {
+    try {
+      const metrics = calculateMetrics();
+      exportService.exportToPDF(projectTasks, adHocTasks, metrics, exportOptions);
+      setShowExportDialog(false);
+      toast({
+        title: "PDF Export Successful",
+        description: "PDF report has been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast({
+        title: "PDF Export Failed",
+        description: "Failed to export PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleUpdateProjectTasks = async (updatedTasks: ProjectTask[]) => {
     try {
       setProjectTasks(updatedTasks);
@@ -453,6 +472,13 @@ const Index = () => {
                       >
                         <FileSpreadsheet className="h-4 w-4 mr-2" />
                         Excel Report
+                      </Button>
+                      <Button 
+                        onClick={handleExportToPDF}
+                        className="bg-destructive hover:bg-destructive/90 text-destructive-foreground flex-1"
+                      >
+                        <FileDown className="h-4 w-4 mr-2" />
+                        PDF Report
                       </Button>
                       <Button 
                         onClick={handleExportToCSV}
