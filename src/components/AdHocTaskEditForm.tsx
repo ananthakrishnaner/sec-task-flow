@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdHocTask, TaskStatus } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,16 @@ export const AdHocTaskEditForm = ({ task, onSave, onCancel, isVisible }: AdHocTa
     dueDate: format(new Date(task.dueDate), "yyyy-MM-dd"),
     status: task.status,
   });
+
+  // Reset form data when task changes
+  useEffect(() => {
+    setFormData({
+      taskName: task.taskName,
+      description: task.description,
+      dueDate: format(new Date(task.dueDate), "yyyy-MM-dd"),
+      status: task.status,
+    });
+  }, [task]);
 
   if (!isVisible) return null;
 

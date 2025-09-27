@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProjectTask, TaskStatus, DailyLog } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,13 @@ const SortableTaskItem = ({ task, onUpdateTask }: SortableTaskItemProps) => {
   const [dailyLogNote, setDailyLogNote] = useState("");
   const [selectedLogStatus, setSelectedLogStatus] = useState<TaskStatus>(task.status);
   const [isEditing, setIsEditing] = useState(false);
+
+  // Reset form states when task changes
+  useEffect(() => {
+    setSelectedLogStatus(task.status);
+    setDailyLogNote("");
+    setShowDailyLog(false);
+  }, [task.id]);
 
   const {
     attributes,

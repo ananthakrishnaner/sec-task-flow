@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProjectTask, TaskStatus } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,20 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: Proje
     status: task.status,
     securitySignOff: task.securitySignOff,
   });
+
+  // Reset form data when task changes
+  useEffect(() => {
+    setFormData({
+      taskName: task.taskName,
+      description: task.description,
+      squadName: task.squadName,
+      spoc: task.spoc,
+      startDate: format(new Date(task.startDate), "yyyy-MM-dd"),
+      deploymentDate: format(new Date(task.deploymentDate), "yyyy-MM-dd"),
+      status: task.status,
+      securitySignOff: task.securitySignOff,
+    });
+  }, [task]);
 
   if (!isVisible) return null;
 

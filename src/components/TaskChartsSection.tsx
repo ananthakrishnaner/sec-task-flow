@@ -22,9 +22,9 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
   }));
 
   const weeklyData = metrics.weeklyCompletions.map((completions, index) => ({
-    week: `Week ${index + 1}`,
+    week: `Week ${5 - index}`, // Show as Week 1 (oldest) to Week 5 (newest)
     completions
-  }));
+  })).reverse(); // Reverse to show chronologically
 
   const taskTypeData = [
     { name: 'Project Tasks', value: metrics.projectTasksCount, color: 'hsl(var(--primary))' },

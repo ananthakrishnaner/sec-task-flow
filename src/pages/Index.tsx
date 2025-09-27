@@ -76,7 +76,7 @@ const Index = () => {
     // Calculate real weekly completions based on actual data
     const weeklyCompletions = calculateWeeklyCompletions();
 
-    return {
+    const metrics = {
       totalTasks,
       completedTasks,
       inProgressTasks,
@@ -87,6 +87,9 @@ const Index = () => {
       weeklyCompletions,
       statusDistribution: statusDistribution as any
     };
+
+    console.log('Calculated metrics:', metrics);
+    return metrics;
   };
 
   // Calculate actual weekly completions from task data
@@ -94,18 +97,45 @@ const Index = () => {
     const weeks = Array(5).fill(0); // Last 5 weeks
     const now = new Date();
     
-    const allCompletedTasks = [...projectTasks, ...adHocTasks].filter(task => task.status === "Complete");
+    // Get all tasks (including those completed in daily logs)
+    const allTasks = [...projectTasks, ...adHocTasks];
     
-    allCompletedTasks.forEach(task => {
-      const taskDate = new Date(task.updatedAt);
-      const daysDiff = Math.floor((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
-      const weekIndex = Math.floor(daysDiff / 7);
+    console.log('Calculating weekly completions for tasks:', allTasks.length);
+    
+    // Check task completion dates and daily log completion dates
+    allTasks.forEach(task => {
+      // Check if task itself was completed
+      if (task.status === "Complete") {
+        const taskDate = new Date(task.updatedAt);
+        const daysDiff = Math.floor((now.getTime() - taskDate.getTime()) / (1000 * 60 * 60 * 24));
+        const weekIndex = Math.floor(daysDiff / 7);
+        
+        console.log(`Task ${task.taskName} completed ${daysDiff} days ago, week ${weekIndex}`);
+        
+        if (weekIndex >= 0 && weekIndex < 5) {
+          weeks[4 - weekIndex]++; // Most recent week is last index
+        }
+      }
       
-      if (weekIndex >= 0 && weekIndex < 5) {
-        weeks[4 - weekIndex]++; // Reverse order (most recent first)
+      // For project tasks, also check daily logs for completion events
+      if ('dailyLogs' in task && task.dailyLogs) {
+        task.dailyLogs.forEach(log => {
+          if (log.status === "Complete") {
+            const logDate = new Date(log.date);
+            const daysDiff = Math.floor((now.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
+            const weekIndex = Math.floor(daysDiff / 7);
+            
+            console.log(`Daily log completion ${daysDiff} days ago, week ${weekIndex}`);
+            
+            if (weekIndex >= 0 && weekIndex < 5) {
+              weeks[4 - weekIndex]++; // Count daily completions too
+            }
+          }
+        });
       }
     });
     
+    console.log('Weekly completions:', weeks);
     return weeks;
   };
 
