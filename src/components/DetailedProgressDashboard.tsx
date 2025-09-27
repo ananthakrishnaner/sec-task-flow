@@ -1,0 +1,456 @@
+import { useState, useMemo } from "react";
+import { ProjectTask, AdHocTask, TaskStatus } from "@/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { TaskStatusBadge } from "@/components/TaskStatusBadge";
+import { 
+  Calendar, 
+  Filter, 
+  Search, 
+  TrendingUp, 
+  Clock, 
+  CheckCircle,
+  Target,
+  AlertCircle,
+  BarChart3
+} from "lucide-react";
+import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line
+} from 'recharts';
+
+interface DetailedProgressDashboardProps {
+  projectTasks: ProjectTask[];
+  adHocTasks: AdHocTask[];
+}
+
+interface TaskFilter {
+  status: TaskStatus | 'all';
+  timeframe: 'all' | 'this-week' | 'last-week' | 'this-month';
+  squad: string;
+  search: string;
+}
+
+const COLORS = {
+  'To Do': 'hsl(var(--muted-foreground))',
+  'In Progress': 'hsl(var(--primary))',
+  'Blocked': 'hsl(var(--destructive))',
+  'Testing': 'hsl(var(--warning))',
+  'Complete': 'hsl(var(--success))'
+};
+
+export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: DetailedProgressDashboardProps) => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const [filter, setFilter] = useState<TaskFilter>({
+    status: 'all',
+    timeframe: 'this-week',
+    squad: 'all',
+    search: ''
+  });
+
+  // Get unique squads for filter
+  const squads = useMemo(() => {
+    const uniqueSquads = [...new Set(projectTasks.map(task => task.squadName))];
+    return uniqueSquads.filter(Boolean);
+  }, [projectTasks]);
+
+  // Filter tasks based on current filters
+  const filteredTasks = useMemo(() => {
+    const allTasks = [...projectTasks, ...adHocTasks];
+    const now = new Date();
+    
+    return allTasks.filter(task => {
+      // Status filter
+      if (filter.status !== 'all' && task.status !== filter.status) return false;
+      
+      // Squad filter (only for project tasks)
+      if (filter.squad !== 'all' && 'squadName' in task && task.squadName !== filter.squad) return false;
+      
+      // Search filter
+      if (filter.search && !task.taskName.toLowerCase().includes(filter.search.toLowerCase())) return false;
+      
+      // Timeframe filter
+      if (filter.timeframe !== 'all') {
+        const taskDate = new Date(task.updatedAt);
+        const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+        const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+        
+        switch (filter.timeframe) {
+          case 'this-week':
+            return isWithinInterval(taskDate, { start: weekStart, end: weekEnd });
+          case 'last-week':
+            const lastWeekStart = new Date(weekStart);
+            lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+            const lastWeekEnd = new Date(weekEnd);
+            lastWeekEnd.setDate(lastWeekEnd.getDate() - 7);
+            return isWithinInterval(taskDate, { start: lastWeekStart, end: lastWeekEnd });
+          case 'this-month':
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            return isWithinInterval(taskDate, { start: monthStart, end: monthEnd });
+        }
+      }
+      
+      return true;
+    });
+  }, [projectTasks, adHocTasks, filter]);
+
+  // Weekly progress calculations
+  const weeklyProgress = useMemo(() => {
+    const now = new Date();
+    const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    
+    const thisWeekTasks = [...projectTasks, ...adHocTasks].filter(task => {
+      const taskDate = new Date(task.createdAt);
+      return isWithinInterval(taskDate, { start: weekStart, end: weekEnd });
+    });
+    
+    const completed = thisWeekTasks.filter(task => task.status === 'Complete').length;
+    const inProgress = thisWeekTasks.filter(task => task.status === 'In Progress').length;
+    const blocked = thisWeekTasks.filter(task => task.status === 'Blocked').length;
+    const remaining = thisWeekTasks.filter(task => ['To Do', 'Testing'].includes(task.status)).length;
+    
+    const progressPercentage = thisWeekTasks.length > 0 ? (completed / thisWeekTasks.length) * 100 : 0;
+    
+    return {
+      total: thisWeekTasks.length,
+      completed,
+      inProgress,
+      blocked,
+      remaining,
+      progressPercentage,
+      tasks: thisWeekTasks
+    };
+  }, [projectTasks, adHocTasks]);
+
+  // Daily completion trend
+  const dailyTrend = useMemo(() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (6 - i));
+      return {
+        date: format(date, 'MMM dd'),
+        day: format(date, 'EEE'),
+        completed: 0
+      };
+    });
+    
+    [...projectTasks, ...adHocTasks].forEach(task => {
+      if (task.status === 'Complete') {
+        const completedDate = new Date(task.updatedAt);
+        const dayIndex = last7Days.findIndex(day => 
+          format(completedDate, 'MMM dd') === day.date
+        );
+        if (dayIndex !== -1) {
+          last7Days[dayIndex].completed++;
+        }
+      }
+    });
+    
+    return last7Days;
+  }, [projectTasks, adHocTasks]);
+
+  // Status distribution for filtered tasks
+  const statusDistribution = useMemo(() => {
+    const distribution = filteredTasks.reduce((acc, task) => {
+      acc[task.status] = (acc[task.status] || 0) + 1;
+      return acc;
+    }, {} as Record<TaskStatus, number>);
+    
+    return Object.entries(distribution).map(([status, count]) => ({
+      name: status,
+      value: count,
+      color: COLORS[status as TaskStatus]
+    }));
+  }, [filteredTasks]);
+
+  const completedTasks = filteredTasks.filter(task => task.status === 'Complete');
+
+  return (
+    <div className="space-y-6">
+      {/* Filter Controls */}
+      <Card className="bg-card shadow-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Task Filters & Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Status</label>
+              <Select 
+                value={filter.status} 
+                onValueChange={(value: TaskStatus | 'all') => setFilter(prev => ({ ...prev, status: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="To Do">To Do</SelectItem>
+                  <SelectItem value="In Progress">In Progress</SelectItem>
+                  <SelectItem value="Blocked">Blocked</SelectItem>
+                  <SelectItem value="Testing">Testing</SelectItem>
+                  <SelectItem value="Complete">Complete</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Time Period</label>
+              <Select 
+                value={filter.timeframe} 
+                onValueChange={(value: 'all' | 'this-week' | 'last-week' | 'this-month') => 
+                  setFilter(prev => ({ ...prev, timeframe: value }))
+                }
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="this-week">This Week</SelectItem>
+                  <SelectItem value="last-week">Last Week</SelectItem>
+                  <SelectItem value="this-month">This Month</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Squad</label>
+              <Select 
+                value={filter.squad} 
+                onValueChange={(value: string) => setFilter(prev => ({ ...prev, squad: value }))}
+              >
+                <SelectTrigger className="bg-input border-border">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border">
+                  <SelectItem value="all">All Squads</SelectItem>
+                  {squads.map(squad => (
+                    <SelectItem key={squad} value={squad}>{squad}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Search</label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={filter.search}
+                  onChange={(e) => setFilter(prev => ({ ...prev, search: e.target.value }))}
+                  className="pl-10 bg-input border-border"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm text-muted-foreground">Results</label>
+              <div className="text-lg font-semibold text-foreground bg-muted px-3 py-2 rounded-md">
+                {filteredTasks.length} tasks
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Weekly Progress Overview */}
+      <Card className="bg-card shadow-card border-border">
+        <CardHeader>
+          <CardTitle className="text-foreground flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            This Week's Progress
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Completion Rate</span>
+                <span className="text-sm font-medium text-foreground">
+                  {weeklyProgress.progressPercentage.toFixed(0)}%
+                </span>
+              </div>
+              <Progress value={weeklyProgress.progressPercentage} className="h-3" />
+              <div className="text-xs text-muted-foreground">
+                {weeklyProgress.completed} of {weeklyProgress.total} tasks completed
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-success">{weeklyProgress.completed}</div>
+              <div className="text-sm text-muted-foreground">Completed</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{weeklyProgress.inProgress}</div>
+              <div className="text-sm text-muted-foreground">In Progress</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="text-2xl font-bold text-muted-foreground">{weeklyProgress.remaining}</div>
+              <div className="text-sm text-muted-foreground">Remaining</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Detailed Views */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="bg-card border border-border">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="completions">
+            <CheckCircle className="h-4 w-4 mr-2" />
+            Completions ({completedTasks.length})
+          </TabsTrigger>
+          <TabsTrigger value="trends">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Trends
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="bg-card shadow-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Status Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statusDistribution}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {statusDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-card shadow-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Daily Completion Trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={dailyTrend}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" />
+                    <YAxis stroke="hsl(var(--muted-foreground))" />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'hsl(var(--card))', 
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px'
+                      }} 
+                    />
+                    <Bar dataKey="completed" fill="hsl(var(--success))" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="completions" className="space-y-4">
+          <Card className="bg-card shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">Completed Tasks</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {completedTasks.length === 0 ? (
+                <div className="text-center py-8">
+                  <CheckCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                  <p className="text-muted-foreground">No completed tasks found with current filters</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {completedTasks.map(task => (
+                    <div key={task.id} className="border border-border rounded-lg p-4 bg-muted/20">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium text-foreground">{task.taskName}</h4>
+                        <TaskStatusBadge status={task.status} />
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">{task.description}</p>
+                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <span>Completed: {format(new Date(task.updatedAt), 'MMM dd, yyyy')}</span>
+                        {'squadName' in task && (
+                          <span>Squad: {task.squadName}</span>
+                        )}
+                        {'spoc' in task && (
+                          <span>SPOC: {task.spoc}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="trends" className="space-y-4">
+          <Card className="bg-card shadow-card border-border">
+            <CardHeader>
+              <CardTitle className="text-foreground">Weekly Completion Trends</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={400}>
+                <LineChart data={dailyTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))', 
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px'
+                    }} 
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="completed" 
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={3}
+                    dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+};

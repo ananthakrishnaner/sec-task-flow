@@ -8,6 +8,7 @@ import { ProjectTaskForm } from "@/components/ProjectTaskForm";
 import { AdHocTaskForm } from "@/components/AdHocTaskForm";
 import { ProjectTasksList } from "@/components/ProjectTasksList";
 import { AdHocTasksList } from "@/components/AdHocTasksList";
+import { DetailedProgressDashboard } from "@/components/DetailedProgressDashboard";
 import { Settings } from "@/pages/Settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -496,6 +497,10 @@ const Index = () => {
               <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
                 Ad-Hoc Tasks
               </TabsTrigger>
+              <TabsTrigger value="detailed" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Detailed Progress
+              </TabsTrigger>
               <TabsTrigger value="analytics" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Analytics
@@ -541,6 +546,13 @@ const Index = () => {
             <AdHocTasksList 
               tasks={adHocTasks}
               onUpdateTasks={handleUpdateAdHocTasks}
+            />
+          </TabsContent>
+
+          <TabsContent value="detailed" className="space-y-6">
+            <DetailedProgressDashboard 
+              projectTasks={projectTasks}
+              adHocTasks={adHocTasks}
             />
           </TabsContent>
 
