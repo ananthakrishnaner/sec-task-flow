@@ -23,7 +23,7 @@ export const exportService = {
     // Executive Summary Sheet with enhanced styling
     if (options.includeMetrics) {
       const summaryData = [
-        ['Cybersecurity Efficiency Tracker - Executive Summary'],
+        ['TRACKER - Executive Summary'],
         ['Generated on:', new Date().toLocaleString()],
         [''],
         ['Key Performance Indicators'],
@@ -163,7 +163,7 @@ export const exportService = {
     }
 
     // Save workbook
-    const fileName = `CET-Report-${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileName = `TRACKER-Report-${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   },
 
@@ -186,7 +186,7 @@ export const exportService = {
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('Cybersecurity Efficiency Tracker', 20, 25);
+    doc.text('TRACKER', 20, 25);
     
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
@@ -194,39 +194,47 @@ export const exportService = {
 
     yPosition = 50;
 
-    // Executive Summary Section
+    // Executive Summary Section - Visual Charts Only
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('Executive Summary', 20, yPosition);
     yPosition += 15;
 
-    // Metrics cards
-    const summaryData = [
-      ['Total Tasks', metrics.totalTasks.toString()],
-      ['Completed Tasks', `${metrics.completedTasks} (${metrics.completionRate.toFixed(1)}%)`],
-      ['In Progress', metrics.inProgressTasks.toString()],
-      ['Blocked Tasks', metrics.blockedTasks.toString()],
-      ['Project Tasks', metrics.projectTasksCount.toString()],
-      ['Ad-Hoc Tasks', metrics.adHocTasksCount.toString()]
-    ];
+    // Task Status Distribution Chart (Simple visual representation)
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Task Status Distribution', 20, yPosition);
+    yPosition += 10;
 
-    autoTable(doc, {
-      startY: yPosition,
-      head: [['Metric', 'Value']],
-      body: summaryData,
-      theme: 'striped',
-      headStyles: { 
-        fillColor: [30, 58, 138],
-        textColor: 255,
-        fontSize: 12,
-        fontStyle: 'bold'
-      },
-      bodyStyles: { fontSize: 10 },
-      margin: { left: 20, right: 20 }
+    // Create visual bars for status distribution
+    const statusColors = {
+      'Complete': [16, 185, 129],
+      'In Progress': [59, 130, 246],
+      'Blocked': [239, 68, 68],
+      'Testing': [245, 158, 11],
+      'To Do': [156, 163, 175]
+    };
+
+    const maxValue = Math.max(...Object.values(metrics.statusDistribution));
+    const barWidth = 120;
+    let barY = yPosition;
+
+    Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
+      const barLength = maxValue > 0 ? (count / maxValue) * barWidth : 0;
+      const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
+      
+      doc.setFillColor(color[0], color[1], color[2]);
+      doc.rect(80, barY - 3, barLength, 8, 'F');
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.text(`${status}: ${count}`, 20, barY + 2);
+      
+      barY += 12;
     });
 
-    yPosition = (doc as any).lastAutoTable.finalY + 20;
+    yPosition = barY + 10;
 
     // Project Tasks Section
     if (options.includeProjectTasks && projectTasks.length > 0) {
@@ -380,14 +388,14 @@ export const exportService = {
       doc.setFontSize(8);
       doc.setTextColor(128, 128, 128);
       doc.text(
-        `Page ${i} of ${totalPages} | Cybersecurity Efficiency Tracker | ${new Date().toLocaleDateString()}`,
+        `Page ${i} of ${totalPages} | TRACKER | ${new Date().toLocaleDateString()}`,
         20,
         pageHeight - 10
       );
     }
 
     // Save the PDF
-    const fileName = `CET-Report-${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileName = `TRACKER-Report-${new Date().toISOString().split('T')[0]}.pdf`;
     doc.save(fileName);
   },
 
@@ -428,7 +436,7 @@ export const exportService = {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `CET-Tasks-${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `TRACKER-Tasks-${new Date().toISOString().split('T')[0]}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
