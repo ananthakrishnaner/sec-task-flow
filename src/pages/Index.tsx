@@ -139,6 +139,81 @@ const Index = () => {
     return weeks;
   };
 
+  // Calculate detailed analytics
+  const calculateDetailedAnalytics = () => {
+    const allTasks = [...projectTasks, ...adHocTasks];
+    const completedTasks = allTasks.filter(task => task.status === "Complete");
+    
+    // Average completion time
+    let avgCompletionTime = 0;
+    if (completedTasks.length > 0) {
+      const totalDays = completedTasks.reduce((sum, task) => {
+        const startDate = new Date('startDate' in task ? task.startDate : task.createdAt);
+        const endDate = new Date(task.updatedAt);
+        const days = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        return sum + Math.max(days, 0);
+      }, 0);
+      avgCompletionTime = totalDays / completedTasks.length;
+    }
+
+    // Tasks overdue (due date passed but not complete)
+    const now = new Date();
+    const overdueTasks = allTasks.filter(task => {
+      if (task.status === "Complete") return false;
+      const dueDate = new Date('deploymentDate' in task ? task.deploymentDate : task.dueDate);
+      return dueDate < now;
+    }).length;
+
+    // Most active squad
+    const squadCounts = projectTasks.reduce((acc, task) => {
+      acc[task.squadName] = (acc[task.squadName] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const mostActiveSquad = Object.entries(squadCounts)
+      .sort(([,a], [,b]) => b - a)[0]?.[0] || "No squads";
+
+    // Pending security sign-offs
+    const pendingSignOffs = projectTasks.filter(task => 
+      !task.securitySignOff && task.status !== "Complete"
+    ).length;
+
+    // Weekly velocity (tasks completed this week vs last week)
+    const thisWeekCompletions = metrics.weeklyCompletions[4] || 0;
+    const lastWeekCompletions = metrics.weeklyCompletions[3] || 0;
+    const velocityChange = lastWeekCompletions > 0 
+      ? ((thisWeekCompletions - lastWeekCompletions) / lastWeekCompletions) * 100 
+      : 0;
+
+    // Most productive day (based on daily logs)
+    const dayCompletions = { 
+      Monday: 0, Tuesday: 0, Wednesday: 0, Thursday: 0, 
+      Friday: 0, Saturday: 0, Sunday: 0 
+    };
+    
+    projectTasks.forEach(task => {
+      task.dailyLogs.forEach(log => {
+        if (log.status === "Complete") {
+          const dayName = new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' });
+          if (dayName in dayCompletions) {
+            dayCompletions[dayName as keyof typeof dayCompletions]++;
+          }
+        }
+      });
+    });
+
+    const mostProductiveDay = Object.entries(dayCompletions)
+      .sort(([,a], [,b]) => b - a)[0]?.[0] || "No data";
+
+    return {
+      avgCompletionTime: avgCompletionTime.toFixed(1),
+      overdueTasks,
+      mostActiveSquad,
+      pendingSignOffs,
+      velocityChange,
+      mostProductiveDay
+    };
+  };
+
   const handleAddProjectTask = async (taskData: Omit<ProjectTask, 'id' | 'priority' | 'dailyLogs' | 'createdAt' | 'updatedAt'>) => {
     try {
       const newTask: ProjectTask = {
@@ -268,6 +343,7 @@ const Index = () => {
   };
 
   const metrics = calculateMetrics();
+  const detailedAnalytics = calculateDetailedAnalytics();
 
   // Show settings view
   if (currentView === 'settings') {
@@ -480,15 +556,19 @@ const Index = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Average completion time:</span>
-                        <span className="text-foreground">5.2 days</span>
+                        <span className="text-foreground">
+                          {detailedAnalytics.avgCompletionTime === "0.0" ? "No data" : `${detailedAnalytics.avgCompletionTime} days`}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Tasks overdue:</span>
-                        <span className="text-destructive">3 tasks</span>
+                        <span className={detailedAnalytics.overdueTasks > 0 ? "text-destructive" : "text-foreground"}>
+                          {detailedAnalytics.overdueTasks} tasks
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Most productive day:</span>
-                        <span className="text-foreground">Wednesday</span>
+                        <span className="text-foreground">{detailedAnalytics.mostProductiveDay}</span>
                       </div>
                     </div>
                   </div>
@@ -497,15 +577,22 @@ const Index = () => {
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Most active squad:</span>
-                        <span className="text-foreground">Security Team Alpha</span>
+                        <span className="text-foreground">{detailedAnalytics.mostActiveSquad}</span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Pending sign-offs:</span>
-                        <span className="text-warning">2 tasks</span>
+                        <span className={detailedAnalytics.pendingSignOffs > 0 ? "text-warning" : "text-foreground"}>
+                          {detailedAnalytics.pendingSignOffs} tasks
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">Weekly velocity:</span>
-                        <span className="text-success">+15%</span>
+                        <span className={
+                          detailedAnalytics.velocityChange > 0 ? "text-success" : 
+                          detailedAnalytics.velocityChange < 0 ? "text-destructive" : "text-foreground"
+                        }>
+                          {detailedAnalytics.velocityChange > 0 ? "+" : ""}{detailedAnalytics.velocityChange.toFixed(0)}%
+                        </span>
                       </div>
                     </div>
                   </div>
