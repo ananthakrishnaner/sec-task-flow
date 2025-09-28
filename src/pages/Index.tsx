@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Index = () => {
   const [projectTasks, setProjectTasks] = useState<ProjectTask[]>([]);
@@ -412,6 +413,8 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
+              
               <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
                 <DialogTrigger asChild>
                   <Button 
@@ -449,16 +452,6 @@ const Index = () => {
                             }
                           />
                           <Label htmlFor="adHocTasks" className="text-foreground">Ad-Hoc Tasks</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox 
-                            id="dailyLogs"
-                            checked={exportOptions.includeDailyLogs}
-                            onCheckedChange={(checked) => 
-                              setExportOptions(prev => ({ ...prev, includeDailyLogs: !!checked }))
-                            }
-                          />
-                          <Label htmlFor="dailyLogs" className="text-foreground">Daily Progress Logs</Label>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Checkbox 
