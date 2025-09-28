@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
+import { exportService } from "@/lib/exportService";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
   Filter, 
@@ -17,7 +19,10 @@ import {
   CheckCircle,
   Target,
   AlertCircle,
-  BarChart3
+  BarChart3,
+  Download,
+  FileSpreadsheet,
+  FileText
 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, isWithinInterval, parseISO } from "date-fns";
 import { 
@@ -60,6 +65,9 @@ const COLORS = {
 
 export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: DetailedProgressDashboardProps) => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [isExporting, setIsExporting] = useState(false);
+  const { toast } = useToast();
+  
   const [filter, setFilter] = useState<TaskFilter>({
     status: 'all',
     timeframe: 'this-week',
@@ -211,6 +219,123 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
   }, [filteredTasks]);
 
   const completedTasks = filteredTasks.filter(task => task.status === 'Complete');
+
+  // Export functions for filtered data
+  const handleExportExcel = async () => {
+    if (filteredTasks.length === 0) {
+      toast({
+        title: "No Data to Export",
+        description: "Apply filters to show tasks before exporting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const filteredProjectTasks = filteredTasks.filter(task => 'squadName' in task) as ProjectTask[];
+      const filteredAdHocTasks = filteredTasks.filter(task => !('squadName' in task)) as AdHocTask[];
+
+      // Calculate metrics for filtered data
+      const totalTasks = filteredTasks.length;
+      const completedTasks = filteredTasks.filter(task => task.status === 'Complete').length;
+      const inProgressTasks = filteredTasks.filter(task => task.status === 'In Progress').length;
+      const blockedTasks = filteredTasks.filter(task => task.status === 'Blocked').length;
+
+      const metrics = {
+        totalTasks,
+        completedTasks,
+        inProgressTasks,
+        blockedTasks,
+        projectTasksCount: filteredProjectTasks.length,
+        adHocTasksCount: filteredAdHocTasks.length,
+        completionRate: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
+        weeklyCompletions: [0, 0, 0, 0], // Simplified for filtered data
+        statusDistribution: filteredTasks.reduce((acc, task) => {
+          acc[task.status] = (acc[task.status] || 0) + 1;
+          return acc;
+        }, {} as Record<TaskStatus, number>)
+      };
+
+      exportService.exportToExcel(filteredProjectTasks, filteredAdHocTasks, metrics, {
+        includeMetrics: true,
+        includeProjectTasks: filteredProjectTasks.length > 0,
+        includeAdHocTasks: filteredAdHocTasks.length > 0,
+        includeDailyLogs: true
+      });
+
+      toast({
+        title: "Export Successful",
+        description: `Excel report with ${filteredTasks.length} filtered tasks has been downloaded.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export filtered data to Excel.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (filteredTasks.length === 0) {
+      toast({
+        title: "No Data to Export",
+        description: "Apply filters to show tasks before exporting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const filteredProjectTasks = filteredTasks.filter(task => 'squadName' in task) as ProjectTask[];
+      const filteredAdHocTasks = filteredTasks.filter(task => !('squadName' in task)) as AdHocTask[];
+
+      // Calculate metrics for filtered data
+      const totalTasks = filteredTasks.length;
+      const completedTasks = filteredTasks.filter(task => task.status === 'Complete').length;
+      const inProgressTasks = filteredTasks.filter(task => task.status === 'In Progress').length;
+      const blockedTasks = filteredTasks.filter(task => task.status === 'Blocked').length;
+
+      const metrics = {
+        totalTasks,
+        completedTasks,
+        inProgressTasks,
+        blockedTasks,
+        projectTasksCount: filteredProjectTasks.length,
+        adHocTasksCount: filteredAdHocTasks.length,
+        completionRate: totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0,
+        weeklyCompletions: [0, 0, 0, 0], // Simplified for filtered data
+        statusDistribution: filteredTasks.reduce((acc, task) => {
+          acc[task.status] = (acc[task.status] || 0) + 1;
+          return acc;
+        }, {} as Record<TaskStatus, number>)
+      };
+
+      exportService.exportToPDF(filteredProjectTasks, filteredAdHocTasks, metrics, {
+        includeMetrics: true,
+        includeProjectTasks: filteredProjectTasks.length > 0,
+        includeAdHocTasks: filteredAdHocTasks.length > 0,
+        includeDailyLogs: true
+      });
+
+      toast({
+        title: "Export Successful",
+        description: `PDF report with ${filteredTasks.length} filtered tasks has been downloaded.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export filtered data to PDF.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -385,6 +510,45 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             <div className="text-center">
               <div className="text-2xl font-bold text-muted-foreground">{weeklyProgress.remaining}</div>
               <div className="text-sm text-muted-foreground">Remaining</div>
+            </div>
+          </div>
+          
+          {/* Export Section */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
+            <div className="flex-1">
+              <p className="text-sm text-muted-foreground">
+                Export filtered results ({filteredTasks.length} tasks) to Excel or PDF
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleExportExcel}
+                disabled={isExporting || filteredTasks.length === 0}
+                variant="outline"
+                size="sm"
+                className="border-border text-foreground hover:bg-muted"
+              >
+                {isExporting ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-foreground border-t-transparent animate-spin mr-2" />
+                ) : (
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                )}
+                Excel
+              </Button>
+              <Button
+                onClick={handleExportPDF}
+                disabled={isExporting || filteredTasks.length === 0}
+                variant="outline"
+                size="sm"
+                className="border-border text-foreground hover:bg-muted"
+              >
+                {isExporting ? (
+                  <div className="w-4 h-4 rounded-full border-2 border-foreground border-t-transparent animate-spin mr-2" />
+                ) : (
+                  <FileText className="h-4 w-4 mr-2" />
+                )}
+                PDF
+              </Button>
             </div>
           </div>
         </CardContent>
