@@ -1,4 +1,5 @@
 import { TaskStatus } from '@/types';
+import { v4 as uuid } from 'uuid';
 
 export interface ActivityLogEntry {
   id: string;
@@ -39,7 +40,7 @@ class ActivityLogger {
       
       const newEntry: ActivityLogEntry = {
         ...entry,
-        id: crypto.randomUUID(),
+        id: uuid(),
         timestamp: new Date().toISOString()
       };
 

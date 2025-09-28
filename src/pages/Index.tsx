@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ProjectTask, AdHocTask, TaskMetrics } from "@/types";
+import { v4 as uuid } from 'uuid';
 import { storageService } from "@/lib/storage";
 import { exportService, ExportOptions } from "@/lib/exportService";
 import { activityLogger } from "@/lib/activityLogger";
@@ -206,7 +207,7 @@ const Index = () => {
     try {
       const newTask: ProjectTask = {
         ...taskData,
-        id: crypto.randomUUID(),
+        id: uuid(),
         priority: projectTasks.length + 1,
         dailyLogs: [],
         createdAt: new Date().toISOString(),
@@ -239,7 +240,7 @@ const Index = () => {
     try {
       const newTask: AdHocTask = {
         ...taskData,
-        id: crypto.randomUUID(),
+        id: uuid(),
         status: "To Do",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

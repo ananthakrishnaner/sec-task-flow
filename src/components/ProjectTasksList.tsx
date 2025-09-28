@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ProjectTask, TaskStatus, DailyLog } from "@/types";
+import { v4 as uuid } from 'uuid';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -104,7 +105,7 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
     if (!dailyLogNote.trim()) return;
 
     const newLog: DailyLog = {
-      id: crypto.randomUUID(),
+      id: uuid(),
       date: new Date().toISOString(),
       status: selectedLogStatus,
       notes: dailyLogNote,
