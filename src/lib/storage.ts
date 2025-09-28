@@ -15,6 +15,17 @@ export const storageService = {
   // Load all data from JSON file
   async loadData(): Promise<TaskData> {
     try {
+      // First try to load from localStorage backup (imported data takes priority)
+      const backup = localStorage.getItem('cet_data_backup');
+      if (backup) {
+        const data = JSON.parse(backup);
+        // Validate structure
+        if (data.projectTasks && data.adHocTasks && data.metadata) {
+          return data;
+        }
+      }
+      
+      // Fall back to static JSON file
       const response = await fetch(JSON_FILE_PATH);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -65,13 +76,6 @@ export const storageService = {
   // Project Tasks
   async getProjectTasks(): Promise<ProjectTask[]> {
     try {
-      // Try to load from localStorage backup first for immediate access
-      const backup = localStorage.getItem('cet_data_backup');
-      if (backup) {
-        const data = JSON.parse(backup);
-        return data.projectTasks || [];
-      }
-      
       const data = await this.loadData();
       return data.projectTasks;
     } catch (error) {
@@ -97,13 +101,6 @@ export const storageService = {
   // Ad-Hoc Tasks
   async getAdHocTasks(): Promise<AdHocTask[]> {
     try {
-      // Try to load from localStorage backup first for immediate access
-      const backup = localStorage.getItem('cet_data_backup');
-      if (backup) {
-        const data = JSON.parse(backup);
-        return data.adHocTasks || [];
-      }
-      
       const data = await this.loadData();
       return data.adHocTasks;
     } catch (error) {
