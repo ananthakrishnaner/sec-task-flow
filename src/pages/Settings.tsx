@@ -40,31 +40,42 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/json') {
+    // Check file type
+    if (file.type !== 'application/json' && !file.name.endsWith('.json')) {
       toast({
         title: "Invalid File Type",
-        description: "Please select a valid JSON file.",
+        description: "Please select a valid JSON file (.json extension required).",
         variant: "destructive",
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Check file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "File size must be less than 10MB.",
+        variant: "destructive",
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
 
     setIsImporting(true);
     try {
       const fileContent = await file.text();
-      const data: TaskData = JSON.parse(fileContent);
-
-      // Validate the structure
-      if (!data.projectTasks || !data.adHocTasks || !data.metadata) {
-        throw new Error('Invalid file structure');
-      }
-
-      // Save the imported data
-      await storageService.saveData(data);
+      
+      // Use the enhanced import method
+      await storageService.importData(fileContent);
       
       toast({
         title: "Import Successful",
-        description: "Data has been imported successfully. The page will refresh.",
+        description: `Successfully imported ${file.name}. Data has been updated.`,
       });
 
       // Notify parent to refresh data
@@ -76,11 +87,17 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
       }
     } catch (error) {
       console.error('Error importing backup:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Import Failed",
-        description: "Failed to import data. Please check the file format.",
+        description: `Failed to import data: ${errorMessage}`,
         variant: "destructive",
       });
+      
+      // Clear file input on error
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     } finally {
       setIsImporting(false);
     }
@@ -176,8 +193,14 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
                 Import a previously saved JSON backup file to restore your data. 
-                This will replace all current data.
+                This will merge with or replace current data depending on the import option.
               </p>
+              <div className="p-3 bg-accent/50 border border-accent rounded-lg">
+                <p className="text-sm text-accent-foreground">
+                  <strong>Supported formats:</strong> JSON files (.json) up to 10MB<br/>
+                  <strong>Import behavior:</strong> Imported data will completely replace existing data
+                </p>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="backup-file" className="text-foreground">
                   Select Backup File

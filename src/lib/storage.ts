@@ -18,22 +18,42 @@ export const storageService = {
       // First try to load from localStorage backup (imported data takes priority)
       const backup = localStorage.getItem('cet_data_backup');
       if (backup) {
-        const data = JSON.parse(backup);
-        // Validate structure
-        if (data.projectTasks && data.adHocTasks && data.metadata) {
-          return data;
+        try {
+          const data = JSON.parse(backup);
+          // Validate structure thoroughly
+          if (data && 
+              Array.isArray(data.projectTasks) && 
+              Array.isArray(data.adHocTasks) && 
+              data.metadata && 
+              typeof data.metadata === 'object') {
+            console.log('Loading data from localStorage backup');
+            return data;
+          } else {
+            console.warn('Invalid backup structure, falling back to JSON file');
+            localStorage.removeItem('cet_data_backup'); // Clear invalid backup
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse localStorage backup:', parseError);
+          localStorage.removeItem('cet_data_backup'); // Clear corrupted backup
         }
       }
       
       // Fall back to static JSON file
+      console.log('Loading data from static JSON file');
       const response = await fetch(JSON_FILE_PATH);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
+      
+      // Validate JSON file structure
+      if (!data || !Array.isArray(data.projectTasks) || !Array.isArray(data.adHocTasks)) {
+        throw new Error('Invalid JSON file structure');
+      }
+      
       return data;
     } catch (error) {
-      console.error('Error loading data from JSON file:', error);
+      console.error('Error loading data:', error);
       // Return empty structure if file doesn't exist or has errors
       return {
         projectTasks: [],
@@ -46,30 +66,30 @@ export const storageService = {
     }
   },
 
-  // Save all data to JSON file (simulation - in real app would need backend)
+  // Save all data to localStorage
   async saveData(data: TaskData): Promise<void> {
     try {
-      // Note: In a real browser environment, we can't write to files directly
-      // This would typically require a backend API endpoint
-      // For now, we'll fall back to localStorage and also prepare the data for download
+      // Validate data structure before saving
+      if (!data || !Array.isArray(data.projectTasks) || !Array.isArray(data.adHocTasks)) {
+        throw new Error('Invalid data structure for saving');
+      }
+      
       const updatedData = {
         ...data,
         metadata: {
           ...data.metadata,
-          lastUpdated: new Date().toISOString()
+          lastUpdated: new Date().toISOString(),
+          version: data.metadata?.version || "1.0.0"
         }
       };
       
       // Store in localStorage as backup
       localStorage.setItem('cet_data_backup', JSON.stringify(updatedData));
       
-      // In a real implementation, this would be:
-      // await fetch('/api/save-tasks', { method: 'POST', body: JSON.stringify(updatedData) });
-      
-      console.log('Data saved successfully');
+      console.log('Data saved successfully to localStorage');
     } catch (error) {
       console.error('Error saving data:', error);
-      throw error;
+      throw new Error(`Failed to save data: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
 
@@ -130,16 +150,83 @@ export const storageService = {
 
   // Clear all data
   async clearAllData(): Promise<void> {
-    const emptyData: TaskData = {
-      projectTasks: [],
-      adHocTasks: [],
-      metadata: {
-        lastUpdated: new Date().toISOString(),
-        version: "1.0.0"
+    try {
+      const emptyData: TaskData = {
+        projectTasks: [],
+        adHocTasks: [],
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          version: "1.0.0"
+        }
+      };
+      await this.saveData(emptyData);
+      localStorage.removeItem('cet_data_backup');
+      console.log('All data cleared successfully');
+    } catch (error) {
+      console.error('Error clearing data:', error);
+      // Force clear localStorage if save fails
+      localStorage.removeItem('cet_data_backup');
+      throw error;
+    }
+  },
+
+  // Check if backup data exists and is valid
+  hasValidBackup(): boolean {
+    try {
+      const backup = localStorage.getItem('cet_data_backup');
+      if (!backup) return false;
+      
+      const data = JSON.parse(backup);
+      return data && 
+             Array.isArray(data.projectTasks) && 
+             Array.isArray(data.adHocTasks) && 
+             data.metadata && 
+             typeof data.metadata === 'object';
+    } catch {
+      return false;
+    }
+  },
+
+  // Repair corrupted backup data
+  async repairBackup(): Promise<boolean> {
+    try {
+      const backup = localStorage.getItem('cet_data_backup');
+      if (!backup) return false;
+      
+      const data = JSON.parse(backup);
+      let repaired = false;
+      
+      // Fix missing arrays
+      if (!Array.isArray(data.projectTasks)) {
+        data.projectTasks = [];
+        repaired = true;
       }
-    };
-    await this.saveData(emptyData);
-    localStorage.removeItem('cet_data_backup');
+      
+      if (!Array.isArray(data.adHocTasks)) {
+        data.adHocTasks = [];
+        repaired = true;
+      }
+      
+      // Fix missing metadata
+      if (!data.metadata || typeof data.metadata !== 'object') {
+        data.metadata = {
+          lastUpdated: new Date().toISOString(),
+          version: "1.0.0"
+        };
+        repaired = true;
+      }
+      
+      if (repaired) {
+        await this.saveData(data);
+        console.log('Backup data repaired successfully');
+      }
+      
+      return repaired;
+    } catch (error) {
+      console.error('Error repairing backup:', error);
+      localStorage.removeItem('cet_data_backup');
+      return false;
+    }
   },
 
   // Download JSON backup
@@ -147,21 +234,100 @@ export const storageService = {
     try {
       const backup = localStorage.getItem('cet_data_backup');
       if (!backup) {
-        throw new Error('No backup data available');
+        // If no backup in localStorage, try to get current data
+        this.loadData().then(data => {
+          const jsonString = JSON.stringify(data, null, 2);
+          this.downloadJsonData(jsonString);
+        }).catch(() => {
+          throw new Error('No backup data available and unable to load current data');
+        });
+        return;
       }
       
-      const blob = new Blob([backup], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `cet-backup-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      // Validate backup before download
+      try {
+        const parsedData = JSON.parse(backup);
+        if (!parsedData || !Array.isArray(parsedData.projectTasks) || !Array.isArray(parsedData.adHocTasks)) {
+          throw new Error('Invalid backup data structure');
+        }
+        
+        // Format JSON for better readability
+        const formattedJson = JSON.stringify(parsedData, null, 2);
+        this.downloadJsonData(formattedJson);
+      } catch (parseError) {
+        throw new Error('Backup data is corrupted');
+      }
     } catch (error) {
       console.error('Error downloading JSON backup:', error);
       throw error;
     }
+  },
+
+  // Helper method to download JSON data
+  downloadJsonData(jsonString: string): void {
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cet-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  },
+
+  // Import data from JSON file
+  async importData(jsonData: string): Promise<void> {
+    try {
+      const data = JSON.parse(jsonData);
+      
+      // Validate imported data structure
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid JSON format');
+      }
+      
+      if (!Array.isArray(data.projectTasks)) {
+        throw new Error('Missing or invalid projectTasks array');
+      }
+      
+      if (!Array.isArray(data.adHocTasks)) {
+        throw new Error('Missing or invalid adHocTasks array');
+      }
+      
+      if (!data.metadata || typeof data.metadata !== 'object') {
+        data.metadata = {
+          lastUpdated: new Date().toISOString(),
+          version: "1.0.0"
+        };
+      }
+      
+      // Validate task structures
+      this.validateTaskStructures(data);
+      
+      // Save the imported data
+      await this.saveData(data);
+      
+      console.log('Data imported successfully');
+    } catch (error) {
+      console.error('Error importing data:', error);
+      throw new Error(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+
+  // Validate task structures
+  validateTaskStructures(data: TaskData): void {
+    // Validate project tasks
+    data.projectTasks.forEach((task, index) => {
+      if (!task.id || !task.taskName || !task.status) {
+        throw new Error(`Project task at index ${index} is missing required fields`);
+      }
+    });
+    
+    // Validate ad-hoc tasks
+    data.adHocTasks.forEach((task, index) => {
+      if (!task.id || !task.taskName || !task.status) {
+        throw new Error(`Ad-hoc task at index ${index} is missing required fields`);
+      }
+    });
   }
 };
