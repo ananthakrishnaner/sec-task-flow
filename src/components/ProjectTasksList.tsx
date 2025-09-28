@@ -10,6 +10,7 @@ import { TaskStatusBadge } from "@/components/TaskStatusBadge";
 import { ProjectTaskEditForm } from "@/components/ProjectTaskEditForm";
 import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit, Trash2 } from "lucide-react";
 import { format } from "date-fns";
+import { activityLogger } from "@/lib/activityLogger";
 import { 
   DndContext, 
   closestCenter, 
@@ -72,20 +73,30 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
   };
 
   const handleStatusChange = (newStatus: TaskStatus) => {
+    const oldStatus = task.status;
     const updatedTask = {
       ...task,
       status: newStatus,
       updatedAt: new Date().toISOString(),
     };
+    
+    // Log the status change
+    activityLogger.logStatusChange(task.id, task.taskName, 'project', oldStatus, newStatus);
+    
     onUpdateTask(updatedTask);
   };
 
   const handleSecuritySignOffToggle = () => {
+    const newSignOffStatus = !task.securitySignOff;
     const updatedTask = {
       ...task,
-      securitySignOff: !task.securitySignOff,
+      securitySignOff: newSignOffStatus,
       updatedAt: new Date().toISOString(),
     };
+    
+    // Log the security sign-off change
+    activityLogger.logSecuritySignOffChanged(task.id, task.taskName, newSignOffStatus);
+    
     onUpdateTask(updatedTask);
   };
 
@@ -107,12 +118,18 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
       updatedAt: new Date().toISOString(),
     };
 
+    // Log the daily log addition
+    activityLogger.logDailyLogAdded(task.id, task.taskName, selectedLogStatus);
+
     onUpdateTask(updatedTask);
     setDailyLogNote("");
     setShowDailyLog(false);
   };
 
   const handleEditTask = (updatedTask: ProjectTask) => {
+    // Log the task update
+    activityLogger.logTaskUpdated(updatedTask.id, updatedTask.taskName, 'project');
+    
     onUpdateTask(updatedTask);
     setIsEditing(false);
   };
@@ -370,7 +387,12 @@ export const ProjectTasksList = ({ tasks, onUpdateTasks }: ProjectTasksListProps
   };
 
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      activityLogger.logTaskDeleted(taskId, task.taskName, 'project');
+    }
+    
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
     onUpdateTasks(updatedTasks);
   };
 

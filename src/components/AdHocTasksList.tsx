@@ -7,6 +7,7 @@ import { TaskStatusBadge } from "@/components/TaskStatusBadge";
 import { AdHocTaskEditForm } from "@/components/AdHocTaskEditForm";
 import { Calendar, Zap, Trash2, Edit } from "lucide-react";
 import { format } from "date-fns";
+import { activityLogger } from "@/lib/activityLogger";
 
 interface AdHocTasksListProps {
   tasks: AdHocTask[];
@@ -19,16 +20,29 @@ export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) =>
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   const handleStatusChange = (taskId: string, newStatus: TaskStatus) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === taskId
-        ? { ...task, status: newStatus, updatedAt: new Date().toISOString() }
-        : task
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const oldStatus = task.status;
+    const updatedTasks = tasks.map(t =>
+      t.id === taskId
+        ? { ...t, status: newStatus, updatedAt: new Date().toISOString() }
+        : t
     );
+    
+    // Log the status change
+    activityLogger.logStatusChange(taskId, task.taskName, 'adhoc', oldStatus, newStatus);
+    
     onUpdateTasks(updatedTasks);
   };
 
   const handleDeleteTask = (taskId: string) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    const task = tasks.find(t => t.id === taskId);
+    if (task) {
+      activityLogger.logTaskDeleted(taskId, task.taskName, 'adhoc');
+    }
+    
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
     onUpdateTasks(updatedTasks);
   };
 
@@ -36,6 +50,10 @@ export const AdHocTasksList = ({ tasks, onUpdateTasks }: AdHocTasksListProps) =>
     const updatedTasks = tasks.map(task =>
       task.id === updatedTask.id ? updatedTask : task
     );
+    
+    // Log the task update
+    activityLogger.logTaskUpdated(updatedTask.id, updatedTask.taskName, 'adhoc');
+    
     onUpdateTasks(updatedTasks);
     setEditingTaskId(null);
   };

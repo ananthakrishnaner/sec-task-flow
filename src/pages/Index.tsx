@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { ProjectTask, AdHocTask, TaskMetrics } from "@/types";
 import { storageService } from "@/lib/storage";
 import { exportService, ExportOptions } from "@/lib/exportService";
+import { activityLogger } from "@/lib/activityLogger";
 import { DashboardMetrics } from "@/components/DashboardMetrics";
 import { TaskChartsSection } from "@/components/TaskChartsSection";
 import { ProjectTaskForm } from "@/components/ProjectTaskForm";
@@ -231,6 +232,9 @@ const Index = () => {
       await storageService.saveProjectTasks(updatedTasks);
       setShowProjectForm(false);
       
+      // Log task creation
+      activityLogger.logTaskCreated(newTask.id, newTask.taskName, 'project');
+      
       toast({
         title: "Project Task Added",
         description: `"${taskData.taskName}" has been added successfully.`,
@@ -259,6 +263,9 @@ const Index = () => {
       setAdHocTasks(updatedTasks);
       await storageService.saveAdHocTasks(updatedTasks);
       setShowAdHocForm(false);
+      
+      // Log task creation
+      activityLogger.logTaskCreated(newTask.id, newTask.taskName, 'adhoc');
       
       toast({
         title: "Ad-Hoc Task Added",

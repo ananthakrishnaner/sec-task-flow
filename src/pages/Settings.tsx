@@ -7,6 +7,7 @@ import { storageService } from "@/lib/storage";
 import { Shield, Download, Upload, RotateCcw, AlertTriangle, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { TaskData } from "@/types";
+import { ActivityLogSection } from "@/components/ActivityLogSection";
 
 interface SettingsProps {
   onDataImported: () => void;
@@ -137,7 +138,10 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
       </header>
 
       <main className="container mx-auto px-6 py-8">
-        <div className="max-w-2xl space-y-6">
+        <div className="max-w-4xl space-y-6">
+          {/* Activity Log Section */}
+          <ActivityLogSection />
+
           {/* Data Backup Section */}
           <Card className="bg-card shadow-card border-border">
             <CardHeader>
