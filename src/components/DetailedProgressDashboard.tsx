@@ -236,6 +236,45 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
       const filteredProjectTasks = filteredTasks.filter(task => 'squadName' in task) as ProjectTask[];
       const filteredAdHocTasks = filteredTasks.filter(task => !('squadName' in task)) as AdHocTask[];
 
+      // Generate date range info for export header
+      const generateDateRangeInfo = (): string => {
+        const now = new Date();
+        const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        switch (filter.timeframe) {
+          case 'this-week':
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            return `This Week Report (${formatDate(startOfWeek.toISOString())} - ${formatDate(endOfWeek.toISOString())})`;
+          
+          case 'last-week':
+            const lastWeekStart = new Date(now);
+            lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+            const lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+            return `Last Week Report (${formatDate(lastWeekStart.toISOString())} - ${formatDate(lastWeekEnd.toISOString())})`;
+          
+          case 'this-month':
+            const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            return `${monthName} Report`;
+          
+          case 'custom':
+            if (filter.startDate && filter.endDate) {
+              return `Custom Report (${formatDate(filter.startDate)} - ${formatDate(filter.endDate)})`;
+            }
+            return 'Custom Date Range Report';
+          
+          default:
+            return 'All Tasks Report';
+        }
+      };
+
       // Calculate metrics for filtered data
       const totalTasks = filteredTasks.length;
       const completedTasks = filteredTasks.filter(task => task.status === 'Complete').length;
@@ -261,7 +300,8 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
         includeMetrics: true,
         includeProjectTasks: filteredProjectTasks.length > 0,
         includeAdHocTasks: filteredAdHocTasks.length > 0,
-        includeDailyLogs: true
+        includeDailyLogs: true,
+        dateRangeInfo: generateDateRangeInfo()
       });
 
       toast({
@@ -294,6 +334,45 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
       const filteredProjectTasks = filteredTasks.filter(task => 'squadName' in task) as ProjectTask[];
       const filteredAdHocTasks = filteredTasks.filter(task => !('squadName' in task)) as AdHocTask[];
 
+      // Generate date range info for PDF header
+      const generateDateRangeInfo = (): string => {
+        const now = new Date();
+        const formatDate = (date: string) => new Date(date).toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+
+        switch (filter.timeframe) {
+          case 'this-week':
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay());
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            return `This Week Report (${formatDate(startOfWeek.toISOString())} - ${formatDate(endOfWeek.toISOString())})`;
+          
+          case 'last-week':
+            const lastWeekStart = new Date(now);
+            lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+            const lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+            return `Last Week Report (${formatDate(lastWeekStart.toISOString())} - ${formatDate(lastWeekEnd.toISOString())})`;
+          
+          case 'this-month':
+            const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            return `${monthName} Report`;
+          
+          case 'custom':
+            if (filter.startDate && filter.endDate) {
+              return `Custom Report (${formatDate(filter.startDate)} - ${formatDate(filter.endDate)})`;
+            }
+            return 'Custom Date Range Report';
+          
+          default:
+            return 'All Tasks Report';
+        }
+      };
+
       // Calculate metrics for filtered data
       const totalTasks = filteredTasks.length;
       const completedTasks = filteredTasks.filter(task => task.status === 'Complete').length;
@@ -319,7 +398,8 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
         includeMetrics: true,
         includeProjectTasks: filteredProjectTasks.length > 0,
         includeAdHocTasks: filteredAdHocTasks.length > 0,
-        includeDailyLogs: true
+        includeDailyLogs: true,
+        dateRangeInfo: generateDateRangeInfo()
       });
 
       toast({

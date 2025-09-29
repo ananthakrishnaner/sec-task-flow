@@ -8,6 +8,7 @@ export interface ExportOptions {
   includeAdHocTasks: boolean;
   includeDailyLogs: boolean;
   includeMetrics: boolean;
+  dateRangeInfo?: string;
 }
 
 export const exportService = {
@@ -25,6 +26,7 @@ export const exportService = {
       const summaryData = [
         ['TRACKER - Executive Summary'],
         ['Generated on:', new Date().toLocaleString()],
+        ...(options.dateRangeInfo ? [['Report Period:', options.dateRangeInfo]] : []),
         [''],
         ['Key Performance Indicators'],
         ['Total Tasks', metrics.totalTasks],
@@ -163,7 +165,10 @@ export const exportService = {
     }
 
     // Save workbook
-    const fileName = `TRACKER-Report-${new Date().toISOString().split('T')[0]}.xlsx`;
+    const fileDate = new Date().toISOString().split('T')[0];
+    const periodSuffix = options.dateRangeInfo ? 
+      `-${options.dateRangeInfo.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 30)}` : '';
+    const fileName = `TRACKER-Report${periodSuffix}-${fileDate}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   },
 
@@ -193,6 +198,15 @@ export const exportService = {
     doc.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth - 70, 25);
 
     yPosition = 50;
+
+    // Date Range Information
+    if (options.dateRangeInfo) {
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text(options.dateRangeInfo, 20, yPosition);
+      yPosition += 20;
+    }
 
     // Executive Summary Section - Visual Charts Only
     doc.setTextColor(0, 0, 0);
@@ -395,7 +409,10 @@ export const exportService = {
     }
 
     // Save the PDF
-    const fileName = `TRACKER-Report-${new Date().toISOString().split('T')[0]}.pdf`;
+    const fileDate = new Date().toISOString().split('T')[0];
+    const periodSuffix = options.dateRangeInfo ? 
+      `-${options.dateRangeInfo.replace(/[^a-zA-Z0-9]/g, '-').substring(0, 30)}` : '';
+    const fileName = `TRACKER-Report${periodSuffix}-${fileDate}.pdf`;
     doc.save(fileName);
   },
 
