@@ -125,36 +125,47 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card shadow-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Shield className="h-6 w-6 text-primary-foreground" />
+      {/* Header - Mobile Optimized */}
+      <header className="border-b border-border bg-card shadow-card sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-primary flex-shrink-0">
+                <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-                <p className="text-sm text-muted-foreground">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold text-foreground truncate">Settings</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   Manage your data backup and import preferences
                 </p>
               </div>
             </div>
             {onGoBack && (
-              <Button 
-                variant="outline"
-                onClick={onGoBack}
-                className="border-border text-foreground hover:bg-muted"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
+              <>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={onGoBack}
+                  className="border-border text-foreground hover:bg-muted hidden sm:inline-flex"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Dashboard
+                </Button>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={onGoBack}
+                  className="border-border text-foreground hover:bg-muted sm:hidden"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </>
             )}
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 py-4 sm:px-6 sm:py-8">
         <div className="max-w-4xl space-y-6">
           {/* Activity Log Section */}
           <ActivityLogSection />

@@ -10,6 +10,7 @@ import { ProjectTaskForm } from "@/components/ProjectTaskForm";
 import { AdHocTaskForm } from "@/components/AdHocTaskForm";
 import { ProjectTasksList } from "@/components/ProjectTasksList";
 import { AdHocTasksList } from "@/components/AdHocTasksList";
+import { UpcomingTasksNotification } from "@/components/UpcomingTasksNotification";
 import { DetailedProgressDashboard } from "@/components/DetailedProgressDashboard";
 import { Settings } from "@/pages/Settings";
 import { Button } from "@/components/ui/button";
@@ -528,6 +529,12 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-4 sm:px-6 sm:py-8">
+        {/* Upcoming Tasks Notification */}
+        <UpcomingTasksNotification 
+          projectTasks={projectTasks} 
+          adHocTasks={adHocTasks} 
+        />
+        
         {/* Metrics Dashboard */}
         <DashboardMetrics metrics={metrics} />
 
@@ -558,20 +565,22 @@ const Index = () => {
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 onClick={() => setShowProjectForm(true)}
                 className="bg-primary hover:bg-primary-glow text-primary-foreground"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Project Task
+                <span className="hidden sm:inline">Project Task</span>
+                <span className="sm:hidden">Project</span>
               </Button>
               <Button 
                 onClick={() => setShowAdHocForm(true)}
                 className="bg-accent hover:bg-accent-muted text-accent-foreground"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Ad-Hoc Task
+                <span className="hidden sm:inline">Ad-Hoc Task</span>
+                <span className="sm:hidden">Ad-Hoc</span>
               </Button>
             </div>
           </div>

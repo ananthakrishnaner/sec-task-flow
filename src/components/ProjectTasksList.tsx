@@ -293,7 +293,7 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
               <Edit className="h-4 w-4 text-primary" />
               Add Daily Status Update
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               <Select value={selectedLogStatus} onValueChange={(value: TaskStatus) => setSelectedLogStatus(value)}>
                 <SelectTrigger className="bg-input border-border text-foreground">
                   <SelectValue />
@@ -306,7 +306,7 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
                   ))}
                 </SelectContent>
               </Select>
-              <div className="md:col-span-2">
+              <div className="lg:col-span-2">
                 <Textarea
                   value={dailyLogNote}
                   onChange={(e) => setDailyLogNote(e.target.value)}
@@ -315,7 +315,7 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 size="sm" 
                 onClick={handleAddDailyLog}

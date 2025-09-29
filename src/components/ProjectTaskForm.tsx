@@ -69,7 +69,7 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
       </CardHeader>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="taskName" className="text-foreground">Task Name *</Label>
               <Input
@@ -107,7 +107,7 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="spoc" className="text-foreground">SPOC (Single Point of Contact) *</Label>
               <Input
@@ -137,7 +137,7 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-foreground">Start Date *</Label>
               <Popover>
@@ -204,10 +204,10 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
             </Label>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button 
               type="submit" 
-              className="bg-primary hover:bg-primary-glow text-primary-foreground"
+              className="bg-primary hover:bg-primary-glow text-primary-foreground flex-1 sm:flex-none"
             >
               Add Project Task
             </Button>
@@ -215,7 +215,7 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
               type="button" 
               variant="outline" 
               onClick={onCancel}
-              className="border-border text-foreground hover:bg-muted"
+              className="border-border text-foreground hover:bg-muted flex-1 sm:flex-none"
             >
               Cancel
             </Button>

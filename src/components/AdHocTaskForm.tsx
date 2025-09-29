@@ -105,10 +105,10 @@ export const AdHocTaskForm = ({ onSubmit, isVisible, onCancel }: AdHocTaskFormPr
             </Popover>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4 pt-4">
             <Button 
               type="submit" 
-              className="bg-accent hover:bg-accent-muted text-accent-foreground"
+              className="bg-accent hover:bg-accent-muted text-accent-foreground flex-1 sm:flex-none"
             >
               Add Ad-Hoc Task
             </Button>
@@ -116,7 +116,7 @@ export const AdHocTaskForm = ({ onSubmit, isVisible, onCancel }: AdHocTaskFormPr
               type="button" 
               variant="outline" 
               onClick={onCancel}
-              className="border-border text-foreground hover:bg-muted"
+              className="border-border text-foreground hover:bg-muted flex-1 sm:flex-none"
             >
               Cancel
             </Button>
