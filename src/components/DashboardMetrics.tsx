@@ -8,7 +8,7 @@ interface DashboardMetricsProps {
 
 export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
       <Card className="bg-card-elevated shadow-card border-border">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>

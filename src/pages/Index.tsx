@@ -28,6 +28,7 @@ const Index = () => {
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showAdHocForm, setShowAdHocForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'settings'>('dashboard');
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
@@ -270,6 +271,7 @@ const Index = () => {
 
   const handleExportToPDF = () => {
     try {
+      setIsExporting(true);
       const metrics = calculateMetrics();
       exportService.exportToPDF(projectTasks, adHocTasks, metrics, exportOptions);
       setShowExportDialog(false);
@@ -284,6 +286,8 @@ const Index = () => {
         description: "Failed to export PDF. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -317,6 +321,7 @@ const Index = () => {
 
   const handleExportToExcel = () => {
     try {
+      setIsExporting(true);
       const metrics = calculateMetrics();
       exportService.exportToExcel(projectTasks, adHocTasks, metrics, exportOptions);
       setShowExportDialog(false);
@@ -331,11 +336,14 @@ const Index = () => {
         description: "Failed to export data. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
   const handleExportToCSV = () => {
     try {
+      setIsExporting(true);
       exportService.exportToCSV(projectTasks, adHocTasks);
       toast({
         title: "Export Successful",
@@ -348,6 +356,8 @@ const Index = () => {
         description: "Failed to export data. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -381,34 +391,44 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card shadow-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gradient-primary">
-                <Shield className="h-6 w-6 text-primary-foreground" />
+      {/* Header - Mobile Optimized */}
+      <header className="border-b border-border bg-card shadow-card sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-primary flex-shrink-0">
+                <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
                   TRACKER
                 </h1>
-                <p className="text-sm text-muted-foreground font-medium">
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">
                   Advanced Task Management System
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
               <ThemeToggle />
               
               <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
                 <DialogTrigger asChild>
                   <Button 
                     variant="outline"
-                    className="border-border text-foreground hover:bg-muted"
+                    size="sm"
+                    className="border-border text-foreground hover:bg-muted hidden sm:inline-flex"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Export Report
+                  </Button>
+                </DialogTrigger>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    className="border-border text-foreground hover:bg-muted sm:hidden"
+                  >
+                    <Download className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="bg-card border-border">
@@ -451,28 +471,34 @@ const Index = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
                       <Button 
                         onClick={handleExportToExcel}
+                        disabled={isExporting}
                         className="bg-primary hover:bg-primary-glow text-primary-foreground flex-1"
                       >
                         <FileSpreadsheet className="h-4 w-4 mr-2" />
-                        Excel Report
+                        <span className="hidden sm:inline">Excel Report</span>
+                        <span className="sm:hidden">Excel</span>
                       </Button>
                       <Button 
                         onClick={handleExportToPDF}
+                        disabled={isExporting}
                         className="bg-destructive hover:bg-destructive/90 text-destructive-foreground flex-1"
                       >
                         <FileDown className="h-4 w-4 mr-2" />
-                        PDF Report
+                        <span className="hidden sm:inline">PDF Report</span>
+                        <span className="sm:hidden">PDF</span>
                       </Button>
                       <Button 
                         onClick={handleExportToCSV}
+                        disabled={isExporting}
                         variant="outline"
                         className="border-border text-foreground hover:bg-muted flex-1"
                       >
                         <FileText className="h-4 w-4 mr-2" />
-                        CSV Export
+                        <span className="hidden sm:inline">CSV Export</span>
+                        <span className="sm:hidden">CSV</span>
                       </Button>
                     </div>
                   </div>
@@ -481,18 +507,27 @@ const Index = () => {
               
               <Button 
                 variant="outline"
+                size="sm"
                 onClick={() => setCurrentView('settings')}
-                className="border-border text-foreground hover:bg-muted"
+                className="border-border text-foreground hover:bg-muted hidden sm:inline-flex"
               >
                 <SettingsIcon className="h-4 w-4 mr-2" />
                 Settings
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => setCurrentView('settings')}
+                className="border-border text-foreground hover:bg-muted sm:hidden"
+              >
+                <SettingsIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 py-4 sm:px-6 sm:py-8">
         {/* Metrics Dashboard */}
         <DashboardMetrics metrics={metrics} />
 
@@ -501,21 +536,25 @@ const Index = () => {
 
         {/* Task Management Tabs */}
         <Tabs defaultValue="project" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList className="bg-card border border-border grid grid-cols-4 w-full">
-              <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                Project Tasks
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <TabsList className="bg-card border border-border grid grid-cols-2 lg:grid-cols-4 w-full lg:w-auto">
+              <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
+                <span className="hidden sm:inline">Project Tasks</span>
+                <span className="sm:hidden">Projects</span>
               </TabsTrigger>
-              <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground">
-                Ad-Hoc Tasks
+              <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs sm:text-sm">
+                <span className="hidden sm:inline">Ad-Hoc Tasks</span>
+                <span className="sm:hidden">Ad-Hoc</span>
               </TabsTrigger>
-              <TabsTrigger value="detailed" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Progress
+              <TabsTrigger value="detailed" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-xs sm:text-sm">
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Progress</span>
+                <span className="sm:hidden">Progress</span>
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Analytics
+              <TabsTrigger value="analytics" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-xs sm:text-sm">
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Analytics</span>
+                <span className="sm:hidden">Analytics</span>
               </TabsTrigger>
             </TabsList>
 

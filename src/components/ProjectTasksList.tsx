@@ -158,48 +158,55 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {task.securitySignOff && (
-              <Badge className="bg-success text-success-foreground">
+              <Badge className="bg-success text-success-foreground hidden sm:flex">
                 <CheckCircle className="h-3 w-3 mr-1" />
                 Security Approved
               </Badge>
             )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(true);
-              }}
-              className="border-border text-foreground hover:bg-muted"
-            >
-              <Edit className="h-4 w-4 mr-1" />
-              Edit
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowDailyLog(!showDailyLog);
-              }}
-              className="border-border text-foreground hover:bg-muted"
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Log
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm('Are you sure you want to delete this task?')) {
-                  onDeleteTask(task.id);
-                }
-              }}
-              className="border-border text-destructive hover:bg-destructive/10 hover:border-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {task.securitySignOff && (
+              <Badge className="bg-success text-success-foreground sm:hidden">
+                <CheckCircle className="h-3 w-3" />
+              </Badge>
+            )}
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(true);
+                }}
+                className="border-border text-foreground hover:bg-muted"
+              >
+                <Edit className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Edit</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowDailyLog(!showDailyLog);
+                }}
+                className="border-border text-foreground hover:bg-muted"
+              >
+                <Plus className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Log</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm('Are you sure you want to delete this task?')) {
+                    onDeleteTask(task.id);
+                  }
+                }}
+                className="border-border text-destructive hover:bg-destructive/10 hover:border-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </CardHeader>
@@ -217,38 +224,38 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
       <CardContent className="pt-4 space-y-4">
         <p className="text-muted-foreground">{task.description}</p>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-primary" />
-            <div>
-              <p className="text-muted-foreground">Squad</p>
-              <p className="text-foreground font-medium">{task.squadName}</p>
+            <User className="h-4 w-4 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs">Squad</p>
+              <p className="text-foreground font-medium truncate">{task.squadName}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Target className="h-4 w-4 text-primary" />
-            <div>
-              <p className="text-muted-foreground">SPOC</p>
-              <p className="text-foreground font-medium">{task.spoc}</p>
+            <Target className="h-4 w-4 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs">SPOC</p>
+              <p className="text-foreground font-medium truncate">{task.spoc}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-primary" />
-            <div>
-              <p className="text-muted-foreground">Start Date</p>
+            <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs">Start Date</p>
               <p className="text-foreground font-medium">{format(new Date(task.startDate), "MMM dd, yyyy")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-destructive" />
-            <div>
-              <p className="text-muted-foreground">Due Date</p>
+            <Clock className="h-4 w-4 text-destructive flex-shrink-0" />
+            <div className="min-w-0">
+              <p className="text-muted-foreground text-xs">Due Date</p>
               <p className="text-foreground font-medium">{format(new Date(task.deploymentDate), "MMM dd, yyyy")}</p>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex items-center gap-2">
             <label className="text-sm text-muted-foreground">Status:</label>
             <Select value={task.status} onValueChange={handleStatusChange}>

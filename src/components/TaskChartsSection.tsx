@@ -40,7 +40,7 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6">
       <Card className="bg-gradient-to-br from-card to-card-elevated shadow-elevated border-border hover:shadow-glow transition-all duration-300">
         <CardHeader className="pb-3">
           <CardTitle className="text-foreground flex items-center gap-2">
