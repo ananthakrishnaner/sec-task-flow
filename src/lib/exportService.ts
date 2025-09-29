@@ -136,15 +136,60 @@ export const exportService = {
     if (options.includeDailyLogs) {
       const logsData = [['Task Name', 'Date', 'Status', 'Notes', 'Created']];
       
+      // Parse date range from options.dateRangeInfo
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      
+      if (options.dateRangeInfo) {
+        const rangeInfo = options.dateRangeInfo.toLowerCase();
+        const now = new Date();
+        
+        if (rangeInfo.includes('week')) {
+          // Current week or specific week
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          startOfWeek.setHours(0, 0, 0, 0);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          endOfWeek.setHours(23, 59, 59, 999);
+          startDate = startOfWeek;
+          endDate = endOfWeek;
+        } else if (rangeInfo.includes('month')) {
+          // Current month or specific month
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          endOfMonth.setHours(23, 59, 59, 999);
+          startDate = startOfMonth;
+          endDate = endOfMonth;
+        } else if (rangeInfo.includes(' - ')) {
+          // Custom date range parsing
+          const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
+          const dates = rangeInfo.match(datePattern);
+          if (dates && dates.length >= 2) {
+            startDate = new Date(dates[0]);
+            endDate = new Date(dates[1]);
+            endDate.setHours(23, 59, 59, 999);
+          }
+        }
+      }
+      
       projectTasks.forEach(task => {
         task.dailyLogs.forEach(log => {
-          logsData.push([
-            task.taskName,
-            new Date(log.date).toLocaleDateString(),
-            log.status,
-            log.notes,
-            new Date(log.createdAt).toLocaleDateString()
-          ]);
+          const logDate = new Date(log.date);
+          
+          // Filter logs based on date range
+          const isInRange = !startDate || !endDate || 
+            (logDate >= startDate && logDate <= endDate);
+          
+          if (isInRange) {
+            logsData.push([
+              task.taskName,
+              new Date(log.date).toLocaleDateString(),
+              log.status,
+              log.notes,
+              new Date(log.createdAt).toLocaleDateString()
+            ]);
+          }
         });
       });
 
@@ -349,14 +394,60 @@ export const exportService = {
     // Daily Logs Section
     if (options.includeDailyLogs) {
       const allLogs: any[] = [];
+      
+      // Parse date range from options.dateRangeInfo
+      let startDate: Date | null = null;
+      let endDate: Date | null = null;
+      
+      if (options.dateRangeInfo) {
+        const rangeInfo = options.dateRangeInfo.toLowerCase();
+        const now = new Date();
+        
+        if (rangeInfo.includes('week')) {
+          // Current week or specific week
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          startOfWeek.setHours(0, 0, 0, 0);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6);
+          endOfWeek.setHours(23, 59, 59, 999);
+          startDate = startOfWeek;
+          endDate = endOfWeek;
+        } else if (rangeInfo.includes('month')) {
+          // Current month or specific month
+          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+          endOfMonth.setHours(23, 59, 59, 999);
+          startDate = startOfMonth;
+          endDate = endOfMonth;
+        } else if (rangeInfo.includes(' - ')) {
+          // Custom date range parsing
+          const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
+          const dates = rangeInfo.match(datePattern);
+          if (dates && dates.length >= 2) {
+            startDate = new Date(dates[0]);
+            endDate = new Date(dates[1]);
+            endDate.setHours(23, 59, 59, 999);
+          }
+        }
+      }
+      
       projectTasks.forEach(task => {
         task.dailyLogs.forEach(log => {
-          allLogs.push([
-            task.taskName,
-            new Date(log.date).toLocaleDateString(),
-            log.status,
-            log.notes.substring(0, 80) + (log.notes.length > 80 ? '...' : '')
-          ]);
+          const logDate = new Date(log.date);
+          
+          // Filter logs based on date range
+          const isInRange = !startDate || !endDate || 
+            (logDate >= startDate && logDate <= endDate);
+          
+          if (isInRange) {
+            allLogs.push([
+              task.taskName,
+              new Date(log.date).toLocaleDateString(),
+              log.status,
+              log.notes.substring(0, 80) + (log.notes.length > 80 ? '...' : '')
+            ]);
+          }
         });
       });
 
