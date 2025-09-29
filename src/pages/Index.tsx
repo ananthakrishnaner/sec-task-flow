@@ -19,7 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown } from "lucide-react";
+import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown, Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -529,12 +529,6 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-4 sm:px-6 sm:py-8">
-        {/* Upcoming Tasks Notification */}
-        <UpcomingTasksNotification 
-          projectTasks={projectTasks} 
-          adHocTasks={adHocTasks} 
-        />
-        
         {/* Metrics Dashboard */}
         <DashboardMetrics metrics={metrics} />
 
@@ -544,7 +538,7 @@ const Index = () => {
         {/* Task Management Tabs */}
         <Tabs defaultValue="project" className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <TabsList className="bg-card border border-border grid grid-cols-2 lg:grid-cols-4 w-full lg:w-auto">
+            <TabsList className="bg-card border border-border grid grid-cols-2 lg:grid-cols-5 w-full lg:w-auto">
               <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Project Tasks</span>
                 <span className="sm:hidden">Projects</span>
@@ -552,6 +546,11 @@ const Index = () => {
               <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Ad-Hoc Tasks</span>
                 <span className="sm:hidden">Ad-Hoc</span>
+              </TabsTrigger>
+              <TabsTrigger value="upcoming" className="data-[state=active]:bg-warning data-[state=active]:text-warning-foreground text-xs sm:text-sm">
+                <Bell className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Upcoming</span>
+                <span className="sm:hidden">Due</span>
               </TabsTrigger>
               <TabsTrigger value="detailed" className="data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground text-xs sm:text-sm">
                 <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -606,6 +605,13 @@ const Index = () => {
             <AdHocTasksList 
               tasks={adHocTasks}
               onUpdateTasks={handleUpdateAdHocTasks}
+            />
+          </TabsContent>
+
+          <TabsContent value="upcoming" className="space-y-6">
+            <UpcomingTasksNotification 
+              projectTasks={projectTasks} 
+              adHocTasks={adHocTasks} 
             />
           </TabsContent>
 
