@@ -266,13 +266,13 @@ export const exportService = {
     doc.text('Task Status Distribution', 20, yPosition);
     yPosition += 10;
 
-    // Create classic pie chart for status distribution
+    // Create futuristic pie chart for status distribution
     const statusColors = {
-      'Complete': [76, 175, 80],     // Classic green
-      'In Progress': [33, 150, 243], // Classic blue
-      'Blocked': [244, 67, 54],      // Classic red
-      'Testing': [255, 193, 7],      // Classic amber
-      'To Do': [158, 158, 158]       // Classic gray
+      'Complete': [52, 211, 153],    // Modern emerald
+      'In Progress': [99, 102, 241], // Modern indigo
+      'Blocked': [248, 113, 113],    // Modern rose
+      'Testing': [251, 146, 60],     // Modern orange
+      'To Do': [156, 163, 175]       // Modern gray
     };
 
     const total = Object.values(metrics.statusDistribution).reduce((sum, count) => sum + count, 0);
@@ -280,23 +280,21 @@ export const exportService = {
     if (total > 0) {
       const centerX = 100;
       const centerY = yPosition + 40;
-      const radius = 32;
-      let startAngle = -Math.PI / 2; // Start from top (12 o'clock)
+      const radius = 34;
+      let startAngle = -Math.PI / 2; // Start from top
 
-      // Draw classic pie slices
+      // Draw futuristic pie slices without borders
       Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
         if (count > 0) {
           const percentage = count / total;
           const sliceAngle = percentage * 2 * Math.PI;
-          const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
+          const color = statusColors[status as keyof typeof statusColors] || [156, 163, 175];
           
-          // Draw slice with classic styling
+          // Draw slice with no border - clean futuristic look
           doc.setFillColor(color[0], color[1], color[2]);
-          doc.setDrawColor(0, 0, 0);
-          doc.setLineWidth(0.8);
           
           const points: number[] = [centerX, centerY];
-          const numSegments = Math.max(8, Math.ceil(sliceAngle / (Math.PI / 20)));
+          const numSegments = Math.max(12, Math.ceil(sliceAngle / (Math.PI / 24))); // Smoother curves
           
           for (let i = 0; i <= numSegments; i++) {
             const angle = startAngle + (sliceAngle * i) / numSegments;
@@ -305,14 +303,14 @@ export const exportService = {
             points.push(x, y);
           }
           
-          // Draw filled triangles for the slice
+          // Draw filled triangles for smooth slice
           if (points.length >= 6) {
             for (let i = 2; i < points.length - 2; i += 2) {
               doc.triangle(
                 points[0], points[1],
                 points[i], points[i + 1],
                 points[i + 2], points[i + 3],
-                'FD'
+                'F'
               );
             }
           }
@@ -321,42 +319,48 @@ export const exportService = {
         }
       });
 
-      // Add classic legend with clean layout
-      let legendY = yPosition + 5;
-      const legendX = 145;
+      // Add subtle center circle for modern donut effect
+      doc.setFillColor(248, 250, 252); // Very light gray
+      doc.circle(centerX, centerY, 12, 'F');
+
+      // Modern minimalist legend
+      let legendY = yPosition + 8;
+      const legendX = 150;
       
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(11);
+      doc.setTextColor(55, 65, 81); // Modern dark gray
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'bold');
-      doc.text('Task Status', legendX, legendY);
-      legendY += 15;
+      doc.text('Status Overview', legendX, legendY);
+      legendY += 18;
       
       Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
         if (count > 0) {
-          const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
-          const percentage = ((count / total) * 100).toFixed(1);
+          const color = statusColors[status as keyof typeof statusColors] || [156, 163, 175];
+          const percentage = ((count / total) * 100).toFixed(0);
           
-          // Draw classic color box
+          // Modern color indicator - circle instead of square
           doc.setFillColor(color[0], color[1], color[2]);
-          doc.setDrawColor(0, 0, 0);
-          doc.setLineWidth(0.5);
-          doc.rect(legendX, legendY - 3, 8, 6, 'FD');
+          doc.circle(legendX + 4, legendY - 1, 3, 'F');
           
-          // Draw text with classic formatting
-          doc.setTextColor(0, 0, 0);
+          // Clean typography
+          doc.setTextColor(75, 85, 99);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          doc.text(`${status}: ${count} (${percentage}%)`, legendX + 12, legendY + 1);
+          doc.text(`${status}`, legendX + 12, legendY + 1);
           
-          legendY += 12;
+          doc.setTextColor(107, 114, 128);
+          doc.setFontSize(8);
+          doc.text(`${count} tasks (${percentage}%)`, legendX + 12, legendY + 9);
+          
+          legendY += 16;
         }
       });
 
-      yPosition = Math.max(centerY + radius + 15, legendY + 10);
+      yPosition = Math.max(centerY + radius + 20, legendY + 10);
     } else {
-      doc.setTextColor(128, 128, 128);
+      doc.setTextColor(156, 163, 175);
       doc.setFontSize(10);
-      doc.text('No tasks available for chart', 20, yPosition + 20);
+      doc.text('No task data available', 20, yPosition + 20);
       yPosition += 40;
     }
 
