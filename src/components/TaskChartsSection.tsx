@@ -73,11 +73,19 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
+                  backgroundColor: 'hsl(var(--popover))', 
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  boxShadow: 'var(--shadow-card)'
-                }} 
+                  boxShadow: 'var(--shadow-card)',
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                itemStyle={{
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                labelStyle={{
+                  color: 'hsl(var(--popover-foreground))',
+                  fontWeight: 600
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -108,11 +116,19 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
               />
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
+                  backgroundColor: 'hsl(var(--popover))', 
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  boxShadow: 'var(--shadow-card)'
-                }} 
+                  boxShadow: 'var(--shadow-card)',
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                itemStyle={{
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                labelStyle={{
+                  color: 'hsl(var(--popover-foreground))',
+                  fontWeight: 600
+                }}
               />
               <Bar 
                 dataKey="completions" 
@@ -161,11 +177,19 @@ export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
               </Pie>
               <Tooltip 
                 contentStyle={{ 
-                  backgroundColor: 'hsl(var(--card))', 
+                  backgroundColor: 'hsl(var(--popover))', 
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  boxShadow: 'var(--shadow-card)'
-                }} 
+                  boxShadow: 'var(--shadow-card)',
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                itemStyle={{
+                  color: 'hsl(var(--popover-foreground))'
+                }}
+                labelStyle={{
+                  color: 'hsl(var(--popover-foreground))',
+                  fontWeight: 600
+                }}
               />
             </PieChart>
           </ResponsiveContainer>

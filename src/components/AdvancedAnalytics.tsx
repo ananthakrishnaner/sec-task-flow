@@ -224,10 +224,18 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
+                    backgroundColor: 'hsl(var(--popover))', 
                     border: '1px solid hsl(var(--border))',
-                    borderRadius: '8px'
-                  }} 
+                    borderRadius: '8px',
+                    color: 'hsl(var(--popover-foreground))'
+                  }}
+                  itemStyle={{
+                    color: 'hsl(var(--popover-foreground))'
+                  }}
+                  labelStyle={{
+                    color: 'hsl(var(--popover-foreground))',
+                    fontWeight: 600
+                  }}
                 />
                 <Legend />
                 <Area 
@@ -293,7 +301,20 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
                     fill="hsl(var(--accent))" 
                     fillOpacity={0.3}
                   />
-                  <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))' }} />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))', 
+                      border: '1px solid hsl(var(--border))',
+                      color: 'hsl(var(--popover-foreground))'
+                    }}
+                    itemStyle={{
+                      color: 'hsl(var(--popover-foreground))'
+                    }}
+                    labelStyle={{
+                      color: 'hsl(var(--popover-foreground))',
+                      fontWeight: 600
+                    }}
+                  />
                   <Legend />
                 </RadarChart>
               </ResponsiveContainer>
@@ -352,8 +373,12 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
                 />
                 <Tooltip 
                   contentStyle={{ 
-                    backgroundColor: 'hsl(var(--card))', 
-                    border: '1px solid hsl(var(--border))'
+                    backgroundColor: 'hsl(var(--popover))', 
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(var(--popover-foreground))'
+                  }}
+                  itemStyle={{
+                    color: 'hsl(var(--popover-foreground))'
                   }}
                   formatter={(value) => [`${value} days`, 'Avg Time']}
                 />
