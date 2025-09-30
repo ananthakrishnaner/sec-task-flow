@@ -7,8 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
-import { exportService } from "@/lib/exportService";
+import { exportService, ExportOptions } from "@/lib/exportService";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
@@ -66,6 +69,7 @@ const COLORS = {
 export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: DetailedProgressDashboardProps) => {
   const [activeTab, setActiveTab] = useState('overview');
   const [isExporting, setIsExporting] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const { toast } = useToast();
   
   const [filter, setFilter] = useState<TaskFilter>({
@@ -76,6 +80,13 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
     startDate: '',
     endDate: '',
     searchType: 'both'
+  });
+
+  const [exportOptions, setExportOptions] = useState<ExportOptions>({
+    includeProjectTasks: true,
+    includeAdHocTasks: true,
+    includeDailyLogs: true,
+    includeMetrics: true
   });
 
   // Get unique squads for filter
@@ -297,13 +308,13 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
       };
 
       exportService.exportToExcel(filteredProjectTasks, filteredAdHocTasks, metrics, {
-        includeMetrics: true,
-        includeProjectTasks: filteredProjectTasks.length > 0,
-        includeAdHocTasks: filteredAdHocTasks.length > 0,
-        includeDailyLogs: true,
+        ...exportOptions,
+        includeProjectTasks: exportOptions.includeProjectTasks && filteredProjectTasks.length > 0,
+        includeAdHocTasks: exportOptions.includeAdHocTasks && filteredAdHocTasks.length > 0,
         dateRangeInfo: generateDateRangeInfo()
       });
 
+      setShowExportDialog(false);
       toast({
         title: "Export Successful",
         description: `Excel report with ${filteredTasks.length} filtered tasks has been downloaded.`,
@@ -395,13 +406,13 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
       };
 
       exportService.exportToPDF(filteredProjectTasks, filteredAdHocTasks, metrics, {
-        includeMetrics: true,
-        includeProjectTasks: filteredProjectTasks.length > 0,
-        includeAdHocTasks: filteredAdHocTasks.length > 0,
-        includeDailyLogs: true,
+        ...exportOptions,
+        includeProjectTasks: exportOptions.includeProjectTasks && filteredProjectTasks.length > 0,
+        includeAdHocTasks: exportOptions.includeAdHocTasks && filteredAdHocTasks.length > 0,
         dateRangeInfo: generateDateRangeInfo()
       });
 
+      setShowExportDialog(false);
       toast({
         title: "Export Successful",
         description: `PDF report with ${filteredTasks.length} filtered tasks has been downloaded.`,
@@ -597,39 +608,100 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
             <div className="flex-1">
               <p className="text-sm text-muted-foreground">
-                Export filtered results ({filteredTasks.length} tasks) to Excel or PDF
+                Export filtered results ({filteredTasks.length} tasks)
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={handleExportExcel}
-                disabled={isExporting || filteredTasks.length === 0}
-                variant="outline"
-                size="sm"
-                className="border-border text-foreground hover:bg-muted"
-              >
-                {isExporting ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-foreground border-t-transparent animate-spin mr-2" />
-                ) : (
-                  <FileSpreadsheet className="h-4 w-4 mr-2" />
-                )}
-                Excel
-              </Button>
-              <Button
-                onClick={handleExportPDF}
-                disabled={isExporting || filteredTasks.length === 0}
-                variant="outline"
-                size="sm"
-                className="border-border text-foreground hover:bg-muted"
-              >
-                {isExporting ? (
-                  <div className="w-4 h-4 rounded-full border-2 border-foreground border-t-transparent animate-spin mr-2" />
-                ) : (
-                  <FileText className="h-4 w-4 mr-2" />
-                )}
-                PDF
-              </Button>
-            </div>
+            <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={filteredTasks.length === 0}
+                  variant="outline"
+                  size="sm"
+                  className="border-border text-foreground hover:bg-muted"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Options
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="bg-card border-border">
+                <DialogHeader>
+                  <DialogTitle className="text-foreground">Export Options</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <Label className="text-foreground font-medium">Include in Export:</Label>
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="progress-projectTasks"
+                          checked={exportOptions.includeProjectTasks}
+                          onCheckedChange={(checked) => 
+                            setExportOptions(prev => ({ ...prev, includeProjectTasks: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="progress-projectTasks" className="text-foreground">Project Tasks</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="progress-adHocTasks"
+                          checked={exportOptions.includeAdHocTasks}
+                          onCheckedChange={(checked) => 
+                            setExportOptions(prev => ({ ...prev, includeAdHocTasks: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="progress-adHocTasks" className="text-foreground">Ad-Hoc Tasks</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="progress-metrics"
+                          checked={exportOptions.includeMetrics}
+                          onCheckedChange={(checked) => 
+                            setExportOptions(prev => ({ ...prev, includeMetrics: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="progress-metrics" className="text-foreground">Summary Metrics</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox 
+                          id="progress-dailyLogs"
+                          checked={exportOptions.includeDailyLogs}
+                          onCheckedChange={(checked) => 
+                            setExportOptions(prev => ({ ...prev, includeDailyLogs: !!checked }))
+                          }
+                        />
+                        <Label htmlFor="progress-dailyLogs" className="text-foreground">Daily Progress</Label>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Button 
+                      onClick={handleExportExcel}
+                      disabled={isExporting}
+                      className="bg-primary hover:bg-primary-glow text-primary-foreground flex-1"
+                    >
+                      {isExporting ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-primary-foreground border-t-transparent animate-spin mr-2" />
+                      ) : (
+                        <FileSpreadsheet className="h-4 w-4 mr-2" />
+                      )}
+                      Excel Report
+                    </Button>
+                    <Button 
+                      onClick={handleExportPDF}
+                      disabled={isExporting}
+                      className="bg-destructive hover:bg-destructive/90 text-destructive-foreground flex-1"
+                    >
+                      {isExporting ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-destructive-foreground border-t-transparent animate-spin mr-2" />
+                      ) : (
+                        <FileText className="h-4 w-4 mr-2" />
+                      )}
+                      PDF Report
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </CardContent>
       </Card>
