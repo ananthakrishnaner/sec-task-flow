@@ -673,61 +673,210 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="analytics">
-            <Card className="bg-card shadow-card border-border">
-              <CardHeader>
-                <CardTitle className="text-foreground">Detailed Analytics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Task Performance</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Average completion time:</span>
-                        <span className="text-foreground">
-                          {detailedAnalytics.avgCompletionTime === "0.0" ? "No data" : `${detailedAnalytics.avgCompletionTime} days`}
-                        </span>
+          <TabsContent value="analytics" className="space-y-6">
+            {/* Key Metrics Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="bg-card shadow-card border-border">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Avg Completion Time</p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {detailedAnalytics.avgCompletionTime === "0.0" ? "N/A" : `${detailedAnalytics.avgCompletionTime}d`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Days per task</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card shadow-card border-border">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Tasks Overdue</p>
+                    <p className={`text-3xl font-bold ${detailedAnalytics.overdueTasks > 0 ? 'text-destructive' : 'text-success'}`}>
+                      {detailedAnalytics.overdueTasks}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Need attention</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card shadow-card border-border">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Weekly Velocity</p>
+                    <p className={`text-3xl font-bold ${
+                      detailedAnalytics.velocityChange > 0 ? 'text-success' : 
+                      detailedAnalytics.velocityChange < 0 ? 'text-destructive' : 'text-foreground'
+                    }`}>
+                      {detailedAnalytics.velocityChange > 0 ? '+' : ''}{detailedAnalytics.velocityChange.toFixed(0)}%
+                    </p>
+                    <p className="text-xs text-muted-foreground">vs last week</p>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-card shadow-card border-border">
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Pending Sign-offs</p>
+                    <p className={`text-3xl font-bold ${detailedAnalytics.pendingSignOffs > 0 ? 'text-warning' : 'text-success'}`}>
+                      {detailedAnalytics.pendingSignOffs}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Security reviews</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Detailed Analytics Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Task Performance */}
+              <Card className="bg-card shadow-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground flex items-center gap-2">
+                    <BarChart3 className="h-5 w-5" />
+                    Task Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">Completion Rate</span>
+                        <span className="text-foreground font-semibold">{metrics.completionRate.toFixed(1)}%</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Tasks overdue:</span>
-                        <span className={detailedAnalytics.overdueTasks > 0 ? "text-destructive" : "text-foreground"}>
-                          {detailedAnalytics.overdueTasks} tasks
-                        </span>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-success transition-all duration-500"
+                          style={{ width: `${metrics.completionRate}%` }}
+                        />
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Most productive day:</span>
-                        <span className="text-foreground">{detailedAnalytics.mostProductiveDay}</span>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">In Progress</span>
+                        <span className="text-foreground font-semibold">{metrics.inProgressTasks} tasks</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-primary transition-all duration-500"
+                          style={{ width: `${(metrics.inProgressTasks / metrics.totalTasks) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-muted-foreground">Blocked</span>
+                        <span className="text-foreground font-semibold">{metrics.blockedTasks} tasks</span>
+                      </div>
+                      <div className="h-2 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-destructive transition-all duration-500"
+                          style={{ width: `${(metrics.blockedTasks / metrics.totalTasks) * 100}%` }}
+                        />
                       </div>
                     </div>
                   </div>
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground">Team Insights</h3>
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Most active squad:</span>
-                        <span className="text-foreground">{detailedAnalytics.mostActiveSquad}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Pending sign-offs:</span>
-                        <span className={detailedAnalytics.pendingSignOffs > 0 ? "text-warning" : "text-foreground"}>
-                          {detailedAnalytics.pendingSignOffs} tasks
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Weekly velocity:</span>
-                        <span className={
-                          detailedAnalytics.velocityChange > 0 ? "text-success" : 
-                          detailedAnalytics.velocityChange < 0 ? "text-destructive" : "text-foreground"
-                        }>
-                          {detailedAnalytics.velocityChange > 0 ? "+" : ""}{detailedAnalytics.velocityChange.toFixed(0)}%
-                        </span>
-                      </div>
+                </CardContent>
+              </Card>
+
+              {/* Team Insights */}
+              <Card className="bg-card shadow-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Team Insights</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm text-muted-foreground">Most Active Squad</span>
+                      <span className="text-sm font-semibold text-foreground">{detailedAnalytics.mostActiveSquad}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm text-muted-foreground">Most Productive Day</span>
+                      <span className="text-sm font-semibold text-foreground">{detailedAnalytics.mostProductiveDay}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm text-muted-foreground">Project Tasks</span>
+                      <span className="text-sm font-semibold text-foreground">{metrics.projectTasksCount}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <span className="text-sm text-muted-foreground">Ad-Hoc Tasks</span>
+                      <span className="text-sm font-semibold text-foreground">{metrics.adHocTasksCount}</span>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+
+              {/* Status Distribution */}
+              <Card className="bg-card shadow-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Status Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {Object.entries(metrics.statusDistribution).map(([status, count]) => {
+                      const percentage = (count / metrics.totalTasks) * 100;
+                      const colorMap: Record<string, string> = {
+                        'Complete': 'bg-success',
+                        'In Progress': 'bg-primary',
+                        'Blocked': 'bg-destructive',
+                        'Testing': 'bg-warning',
+                        'To Do': 'bg-muted-foreground'
+                      };
+                      return (
+                        <div key={status}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-muted-foreground">{status}</span>
+                            <span className="text-foreground font-semibold">{count} ({percentage.toFixed(0)}%)</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${colorMap[status] || 'bg-muted-foreground'} transition-all duration-500`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Weekly Completions Trend */}
+              <Card className="bg-card shadow-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-foreground">Weekly Completions Trend</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'].map((week, index) => {
+                      const count = metrics.weeklyCompletions[index] || 0;
+                      const maxCount = Math.max(...metrics.weeklyCompletions, 1);
+                      const percentage = (count / maxCount) * 100;
+                      return (
+                        <div key={week}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-muted-foreground">{week}</span>
+                            <span className="text-foreground font-semibold">{count} tasks</span>
+                          </div>
+                          <div className="h-2 bg-muted rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-accent transition-all duration-500"
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </main>
