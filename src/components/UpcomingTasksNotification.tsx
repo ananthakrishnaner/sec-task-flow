@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Calendar, Clock, AlertTriangle, Bell, ChevronDown, ChevronUp, Target, User, Zap, Filter, LayoutList, CalendarRange } from "lucide-react";
+import { Calendar, Clock, AlertTriangle, Bell, ChevronDown, ChevronUp, Target, User, Zap, Filter, LayoutList, CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, differenceInDays, isToday, isTomorrow, addDays, startOfDay } from "date-fns";
 
@@ -363,16 +363,21 @@ interface TimelineViewProps {
 }
 
 const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
+  const [weekOffset, setWeekOffset] = useState(0);
   const today = startOfDay(new Date());
   
-  // Create date columns for the next 14 days
+  // Create date columns based on week offset
   const dateColumns = useMemo(() => {
     const dates = [];
-    for (let i = 0; i <= 14; i++) {
-      dates.push(addDays(today, i));
+    const startDate = addDays(today, weekOffset * 14);
+    for (let i = 0; i < 14; i++) {
+      dates.push(addDays(startDate, i));
     }
     return dates;
-  }, []);
+  }, [weekOffset]);
+
+  const canGoBack = weekOffset < 0;
+  const canGoForward = true; // Can always go forward to future dates
 
   // Group tasks by due date
   const tasksByDate = useMemo(() => {
@@ -393,6 +398,43 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
 
   return (
     <div className="w-full">
+      {/* Navigation Header */}
+      <div className="flex items-center justify-between mb-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWeekOffset(prev => prev - 1)}
+          disabled={!canGoBack}
+          className="h-8"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Previous
+        </Button>
+        
+        <div className="text-sm font-medium text-foreground">
+          {weekOffset === 0 ? (
+            <span className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-primary" />
+              This Week & Next
+            </span>
+          ) : weekOffset > 0 ? (
+            `${format(dateColumns[0], 'MMM d')} - ${format(dateColumns[dateColumns.length - 1], 'MMM d, yyyy')}`
+          ) : (
+            `${format(dateColumns[0], 'MMM d')} - ${format(dateColumns[dateColumns.length - 1], 'MMM d, yyyy')}`
+          )}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWeekOffset(prev => prev + 1)}
+          className="h-8"
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+
       {/* Calendar Grid */}
       <div className="grid grid-cols-7 gap-2">
         {dateColumns.map((date, idx) => {
