@@ -266,75 +266,37 @@ export const exportService = {
     doc.text('Task Status Distribution', 20, yPosition);
     yPosition += 10;
 
-    // Create pie chart for status distribution with enhanced design
+    // Create classic pie chart for status distribution
     const statusColors = {
-      'Complete': [34, 197, 94],    // Vibrant green
-      'In Progress': [59, 130, 246], // Bright blue
-      'Blocked': [239, 68, 68],      // Bright red
-      'Testing': [251, 191, 36],     // Golden yellow
-      'To Do': [148, 163, 184]       // Cool gray
+      'Complete': [76, 175, 80],     // Classic green
+      'In Progress': [33, 150, 243], // Classic blue
+      'Blocked': [244, 67, 54],      // Classic red
+      'Testing': [255, 193, 7],      // Classic amber
+      'To Do': [158, 158, 158]       // Classic gray
     };
 
     const total = Object.values(metrics.statusDistribution).reduce((sum, count) => sum + count, 0);
     
     if (total > 0) {
       const centerX = 100;
-      const centerY = yPosition + 45;
-      const radius = 35;
-      const shadowOffset = 2;
-      let startAngle = -Math.PI / 2; // Start from top
+      const centerY = yPosition + 40;
+      const radius = 32;
+      let startAngle = -Math.PI / 2; // Start from top (12 o'clock)
 
-      // Draw shadow first
-      Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
-        if (count > 0) {
-          const percentage = count / total;
-          const sliceAngle = percentage * 2 * Math.PI;
-          
-          // Draw shadow
-          doc.setFillColor(200, 200, 200);
-          const shadowPoints: number[] = [centerX + shadowOffset, centerY + shadowOffset];
-          const numSegments = Math.max(8, Math.ceil(sliceAngle / (Math.PI / 16)));
-          
-          for (let i = 0; i <= numSegments; i++) {
-            const angle = startAngle + (sliceAngle * i) / numSegments;
-            const x = centerX + shadowOffset + radius * Math.cos(angle);
-            const y = centerY + shadowOffset + radius * Math.sin(angle);
-            shadowPoints.push(x, y);
-          }
-          
-          // Draw shadow triangles
-          if (shadowPoints.length >= 6) {
-            for (let i = 2; i < shadowPoints.length - 2; i += 2) {
-              doc.triangle(
-                shadowPoints[0], shadowPoints[1],
-                shadowPoints[i], shadowPoints[i + 1],
-                shadowPoints[i + 2], shadowPoints[i + 3],
-                'F'
-              );
-            }
-          }
-          
-          startAngle += sliceAngle;
-        }
-      });
-
-      // Reset start angle for main pie
-      startAngle = -Math.PI / 2;
-
-      // Draw main pie slices with enhanced colors
+      // Draw classic pie slices
       Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
         if (count > 0) {
           const percentage = count / total;
           const sliceAngle = percentage * 2 * Math.PI;
           const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
           
-          // Draw main slice with enhanced color
+          // Draw slice with classic styling
           doc.setFillColor(color[0], color[1], color[2]);
-          doc.setDrawColor(255, 255, 255);
-          doc.setLineWidth(1);
+          doc.setDrawColor(0, 0, 0);
+          doc.setLineWidth(0.8);
           
           const points: number[] = [centerX, centerY];
-          const numSegments = Math.max(8, Math.ceil(sliceAngle / (Math.PI / 16)));
+          const numSegments = Math.max(8, Math.ceil(sliceAngle / (Math.PI / 20)));
           
           for (let i = 0; i <= numSegments; i++) {
             const angle = startAngle + (sliceAngle * i) / numSegments;
@@ -343,23 +305,15 @@ export const exportService = {
             points.push(x, y);
           }
           
-          // Draw filled triangles
+          // Draw filled triangles for the slice
           if (points.length >= 6) {
             for (let i = 2; i < points.length - 2; i += 2) {
               doc.triangle(
                 points[0], points[1],
                 points[i], points[i + 1],
                 points[i + 2], points[i + 3],
-                'F'
+                'FD'
               );
-            }
-            
-            // Add white border lines
-            doc.setDrawColor(255, 255, 255);
-            doc.setLineWidth(1.5);
-            for (let i = 2; i < points.length - 2; i += 2) {
-              doc.line(points[0], points[1], points[i], points[i + 1]);
-              doc.line(points[i], points[i + 1], points[i + 2], points[i + 3]);
             }
           }
           
@@ -367,48 +321,38 @@ export const exportService = {
         }
       });
 
-      // Add center circle for donut effect
-      doc.setFillColor(255, 255, 255);
-      doc.circle(centerX, centerY, 8, 'F');
-      doc.setDrawColor(220, 220, 220);
-      doc.setLineWidth(0.5);
-      doc.circle(centerX, centerY, 8, 'S');
-
-      // Enhanced legend with better spacing and design
-      let legendY = yPosition + 10;
-      const legendX = 150;
+      // Add classic legend with clean layout
+      let legendY = yPosition + 5;
+      const legendX = 145;
       
-      // Legend title
       doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
+      doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('Task Distribution', legendX, legendY);
-      legendY += 12;
+      doc.text('Task Status', legendX, legendY);
+      legendY += 15;
       
       Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
         if (count > 0) {
           const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
           const percentage = ((count / total) * 100).toFixed(1);
           
-          // Draw enhanced color indicator with border
+          // Draw classic color box
           doc.setFillColor(color[0], color[1], color[2]);
-          doc.setDrawColor(255, 255, 255);
+          doc.setDrawColor(0, 0, 0);
           doc.setLineWidth(0.5);
-          doc.roundedRect(legendX, legendY - 4, 10, 7, 1, 1, 'FD');
+          doc.rect(legendX, legendY - 3, 8, 6, 'FD');
           
-          // Draw text with better formatting
+          // Draw text with classic formatting
           doc.setTextColor(0, 0, 0);
           doc.setFontSize(9);
           doc.setFont('helvetica', 'normal');
-          doc.text(`${status}`, legendX + 15, legendY);
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${count} (${percentage}%)`, legendX + 15, legendY + 8);
+          doc.text(`${status}: ${count} (${percentage}%)`, legendX + 12, legendY + 1);
           
-          legendY += 16;
+          legendY += 12;
         }
       });
 
-      yPosition = Math.max(centerY + radius + 25, legendY + 10);
+      yPosition = Math.max(centerY + radius + 15, legendY + 10);
     } else {
       doc.setTextColor(128, 128, 128);
       doc.setFontSize(10);
