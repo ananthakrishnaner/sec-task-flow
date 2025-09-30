@@ -364,162 +364,226 @@ interface TimelineViewProps {
 
 const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   const today = startOfDay(new Date());
-  const timelineStart = today;
-  const timelineEnd = addDays(today, 14);
   
   // Create date columns for the next 14 days
   const dateColumns = useMemo(() => {
     const dates = [];
     for (let i = 0; i <= 14; i++) {
-      dates.push(addDays(timelineStart, i));
+      dates.push(addDays(today, i));
     }
     return dates;
   }, []);
 
-  return (
-    <div className="min-w-[1000px]">
-      {/* Timeline Header */}
-      <div className="flex border-b border-border mb-4 pb-3">
-        <div className="w-56 flex-shrink-0 font-semibold text-sm text-foreground px-4">Task Details</div>
-        <div className="flex-1 flex">
-          {dateColumns.map((date, idx) => {
-            const isToday = startOfDay(date).getTime() === today.getTime();
-            return (
-              <div
-                key={idx}
-                className={`flex-1 text-center text-xs border-l border-border/30 px-1 ${
-                  isToday ? 'bg-primary/10' : ''
-                }`}
-              >
-                <div className={`font-semibold ${isToday ? 'text-primary' : 'text-foreground'}`}>
-                  {format(date, 'dd')}
-                </div>
-                <div className={`text-[10px] ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
-                  {format(date, 'EEE')}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+  // Group tasks by due date
+  const tasksByDate = useMemo(() => {
+    const grouped: { [key: string]: UpcomingTask[] } = {};
+    
+    tasks.forEach(task => {
+      const dueDate = startOfDay(new Date(task.dueDate));
+      const dateKey = format(dueDate, 'yyyy-MM-dd');
+      
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+      grouped[dateKey].push(task);
+    });
+    
+    return grouped;
+  }, [tasks]);
 
-      {/* Timeline Tasks */}
-      <div className="space-y-1">
-        {tasks.map((task) => {
-          const dueDate = startOfDay(new Date(task.dueDate));
-          const daysDiff = differenceInDays(dueDate, timelineStart);
-          const urgency = getTaskUrgency(task.daysUntilDue);
-          const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
-          
-          // Calculate bar position (0-14 days range)
-          const barPosition = Math.max(0, Math.min(14, daysDiff));
+  return (
+    <div className="w-full">
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7 gap-2">
+        {dateColumns.map((date, idx) => {
+          const dateKey = format(date, 'yyyy-MM-dd');
+          const isToday = startOfDay(date).getTime() === today.getTime();
+          const tasksForDate = tasksByDate[dateKey] || [];
+          const isPast = date < today;
           
           return (
-            <div key={task.id} className="flex items-center group hover:bg-muted/30 rounded-md transition-colors py-2">
-              {/* Task Info */}
-              <div className="w-56 flex-shrink-0 px-4">
-                <div className="flex items-center gap-2 mb-1">
-                  {task.type === 'project' ? (
-                    <Target className="h-3 w-3 text-primary flex-shrink-0" />
-                  ) : (
-                    <Zap className="h-3 w-3 text-accent flex-shrink-0" />
-                  )}
-                  <span className="text-sm font-medium text-foreground truncate">
-                    {task.taskName}
-                  </span>
-                </div>
-                {task.squadName && (
-                  <div className="text-xs text-muted-foreground ml-5 truncate">
-                    {task.squadName}
+            <div
+              key={idx}
+              className={`relative group ${
+                idx >= 7 ? 'mt-0' : ''
+              }`}
+            >
+              {/* Calendar Day Box */}
+              <div
+                className={`
+                  aspect-square rounded-lg border-2 p-2 transition-all
+                  ${isToday 
+                    ? 'border-primary bg-primary/10 shadow-lg' 
+                    : isPast 
+                    ? 'border-border/50 bg-muted/30' 
+                    : 'border-border bg-card hover:border-primary/50 hover:shadow-md'
+                  }
+                `}
+              >
+                {/* Date Number */}
+                <div className="flex flex-col h-full">
+                  <div className={`text-center mb-1 ${
+                    isToday ? 'text-primary font-bold text-lg' : 'text-foreground font-semibold'
+                  }`}>
+                    {format(date, 'd')}
                   </div>
-                )}
-                <div className="flex items-center gap-2 mt-1 ml-5">
-                  <Badge className={`${urgency.color} text-[10px] px-1 py-0`}>
-                    {urgency.label}
-                  </Badge>
+                  <div className={`text-center text-[10px] mb-2 ${
+                    isToday ? 'text-primary' : 'text-muted-foreground'
+                  }`}>
+                    {format(date, 'EEE')}
+                  </div>
+
+                  {/* Task Indicators */}
+                  {tasksForDate.length > 0 && (
+                    <div className="flex-1 flex flex-col gap-1 overflow-hidden">
+                      {tasksForDate.slice(0, 3).map((task) => {
+                        const urgency = getTaskUrgency(task.daysUntilDue);
+                        const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
+                        
+                        return (
+                          <div
+                            key={task.id}
+                            className={`
+                              text-[9px] px-1 py-0.5 rounded truncate font-medium
+                              ${isUrgent
+                                ? 'bg-destructive text-destructive-foreground'
+                                : urgency.level === 'high'
+                                ? 'bg-warning text-warning-foreground'
+                                : urgency.level === 'medium'
+                                ? 'bg-warning/60 text-warning-foreground'
+                                : 'bg-primary/70 text-primary-foreground'
+                              }
+                            `}
+                            title={task.taskName}
+                          >
+                            {task.taskName}
+                          </div>
+                        );
+                      })}
+                      {tasksForDate.length > 3 && (
+                        <div className="text-[9px] text-muted-foreground text-center">
+                          +{tasksForDate.length - 3} more
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Today Badge */}
+                  {isToday && (
+                    <div className="absolute top-1 right-1">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    </div>
+                  )}
                 </div>
               </div>
 
-              {/* Timeline Grid */}
-              <div className="flex-1 flex relative h-12">
-                {/* Background cells with borders */}
-                {dateColumns.map((date, idx) => {
-                  const isToday = startOfDay(date).getTime() === today.getTime();
-                  return (
-                    <div
-                      key={idx}
-                      className={`flex-1 border-l border-border/30 ${
-                        isToday ? 'bg-primary/5' : ''
-                      }`}
-                    />
-                  );
-                })}
+              {/* Detailed Hover Tooltip */}
+              {tasksForDate.length > 0 && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-50 pointer-events-none">
+                  <div className="bg-popover border-2 border-border rounded-lg shadow-elevated p-4 min-w-[280px] max-w-[320px]">
+                    {/* Date Header */}
+                    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span className="font-semibold text-foreground">
+                        {format(date, 'EEEE, MMM d, yyyy')}
+                      </span>
+                    </div>
 
-                {/* Task Marker */}
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 transform -translate-x-1/2 z-10"
-                  style={{
-                    left: `${((barPosition + 0.5) / 15) * 100}%`,
-                  }}
-                >
-                  <div className="relative group/marker cursor-pointer">
-                    {/* Marker dot */}
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 shadow-lg transition-all group-hover/marker:scale-125 ${
-                        isUrgent
-                          ? 'bg-destructive border-destructive shadow-destructive/50'
-                          : urgency.level === 'high'
-                          ? 'bg-warning border-warning shadow-warning/50'
-                          : urgency.level === 'medium'
-                          ? 'bg-warning/70 border-warning/70 shadow-warning/30'
-                          : 'bg-primary border-primary shadow-primary/50'
-                      }`}
-                    />
-                    
-                    {/* Line from task name to marker */}
-                    <div 
-                      className={`absolute top-1/2 right-full h-0.5 opacity-30 ${
-                        isUrgent ? 'bg-destructive' : 'bg-primary'
-                      }`}
-                      style={{
-                        width: `${56 * 4 + (barPosition / 15) * 100}px`
-                      }}
-                    />
-
-                    {/* Hover Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover/marker:block z-20 pointer-events-none">
-                      <div className="bg-popover border border-border rounded-lg shadow-elevated p-3 min-w-[220px] max-w-[300px]">
-                        <div className="font-semibold text-sm text-foreground mb-2">{task.taskName}</div>
-                        <div className="text-xs text-muted-foreground space-y-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="h-3 w-3 flex-shrink-0" />
-                            <span>{format(dueDate, 'MMM dd, yyyy')}</span>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge className={`${urgency.color} text-xs`}>
-                              {urgency.label}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs">
-                              {task.status}
-                            </Badge>
-                          </div>
-                          {task.description && (
-                            <p className="text-xs mt-2 pt-2 border-t border-border line-clamp-3">
-                              {task.description}
-                            </p>
-                          )}
-                          {task.spoc && (
-                            <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border">
-                              <User className="h-3 w-3 flex-shrink-0" />
-                              <span className="font-medium">{task.spoc}</span>
+                    {/* Tasks List */}
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto">
+                      {tasksForDate.map((task) => {
+                        const urgency = getTaskUrgency(task.daysUntilDue);
+                        const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
+                        
+                        return (
+                          <div
+                            key={task.id}
+                            className={`p-2 rounded-lg border ${
+                              isUrgent ? 'border-destructive/30 bg-destructive/5' : 'border-border bg-card'
+                            }`}
+                          >
+                            {/* Task Header */}
+                            <div className="flex items-start gap-2 mb-2">
+                              {task.type === 'project' ? (
+                                <Target className="h-3 w-3 text-primary flex-shrink-0 mt-0.5" />
+                              ) : (
+                                <Zap className="h-3 w-3 text-accent flex-shrink-0 mt-0.5" />
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-semibold text-sm text-foreground mb-1 break-words">
+                                  {task.taskName}
+                                </div>
+                                {task.description && (
+                                  <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                    {task.description}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          )}
-                        </div>
-                      </div>
+
+                            {/* Task Details */}
+                            <div className="space-y-1.5 text-xs">
+                              {/* Type and Status */}
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-[10px] px-1.5 py-0 ${
+                                    task.type === 'project' 
+                                      ? 'bg-primary/10 text-primary border-primary/20' 
+                                      : 'bg-accent/10 text-accent border-accent/20'
+                                  }`}
+                                >
+                                  {task.type === 'project' ? 'Project' : 'Ad-Hoc'}
+                                </Badge>
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                                  {task.status}
+                                </Badge>
+                              </div>
+
+                              {/* Urgency */}
+                              <div className="flex items-center gap-1.5">
+                                <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+                                <Badge className={`${urgency.color} text-[10px] px-1.5 py-0`}>
+                                  {urgency.label}
+                                </Badge>
+                              </div>
+
+                              {/* Squad */}
+                              {task.squadName && (
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                  <User className="h-3 w-3 flex-shrink-0" />
+                                  <span className="font-medium">{task.squadName}</span>
+                                </div>
+                              )}
+
+                              {/* SPOC */}
+                              {task.spoc && (
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                  <User className="h-3 w-3 flex-shrink-0" />
+                                  <span>SPOC: <span className="font-medium">{task.spoc}</span></span>
+                                </div>
+                              )}
+
+                              {/* Due Time */}
+                              <div className="flex items-center gap-1.5 text-muted-foreground pt-1 border-t border-border/50">
+                                <Clock className="h-3 w-3 flex-shrink-0" />
+                                <span>
+                                  {task.daysUntilDue < 0 
+                                    ? `Overdue by ${Math.abs(task.daysUntilDue)} day${Math.abs(task.daysUntilDue) > 1 ? 's' : ''}`
+                                    : task.daysUntilDue === 0
+                                    ? 'Due today'
+                                    : `Due in ${task.daysUntilDue} day${task.daysUntilDue > 1 ? 's' : ''}`
+                                  }
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           );
         })}
@@ -527,22 +591,26 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
 
       {/* Legend */}
       <div className="mt-6 pt-4 border-t border-border">
-        <div className="flex items-center gap-6 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-4 text-xs">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-destructive border-2 border-destructive" />
-            <span>Overdue/Critical</span>
+            <div className="w-4 h-4 rounded border-2 border-primary bg-primary/10" />
+            <span className="text-muted-foreground">Today</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-warning border-2 border-warning" />
-            <span>High Priority</span>
+            <div className="w-4 h-4 rounded bg-destructive" />
+            <span className="text-muted-foreground">Overdue/Critical</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-warning/70 border-2 border-warning/70" />
-            <span>Medium Priority</span>
+            <div className="w-4 h-4 rounded bg-warning" />
+            <span className="text-muted-foreground">High Priority</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-primary border-2 border-primary" />
-            <span>Normal</span>
+            <div className="w-4 h-4 rounded bg-warning/60" />
+            <span className="text-muted-foreground">Medium Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 rounded bg-primary/70" />
+            <span className="text-muted-foreground">Normal</span>
           </div>
         </div>
       </div>
