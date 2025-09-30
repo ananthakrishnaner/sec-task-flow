@@ -8,61 +8,61 @@ All colors MUST be HSL for proper theming
 
 @layer base {
   :root {
-    /* Core backgrounds - Professional dark theme */
-    --background: 222 23% 7%;
-    --foreground: 210 40% 95%;
+    /* Core backgrounds - Enhanced night vision theme */
+    --background: 220 15% 5%;
+    --foreground: 210 20% 90%;
 
-    /* Card system - Layered depth */
-    --card: 222 20% 11%;
-    --card-foreground: 210 40% 95%;
-    --card-elevated: 222 18% 14%;
+    /* Card system - Layered depth with reduced brightness */
+    --card: 220 12% 8%;
+    --card-foreground: 210 20% 90%;
+    --card-elevated: 220 10% 10%;
 
     /* Interactive surfaces */
-    --popover: 222 20% 11%;
-    --popover-foreground: 210 40% 95%;
+    --popover: 220 12% 8%;
+    --popover-foreground: 210 20% 90%;
 
-    /* Primary - Cybersecurity blue */
-    --primary: 207 89% 54%;
-    --primary-foreground: 222 23% 7%;
-    --primary-glow: 207 89% 64%;
+    /* Primary - Softer cybersecurity blue for night */
+    --primary: 207 75% 48%;
+    --primary-foreground: 210 20% 90%;
+    --primary-glow: 207 70% 58%;
     --primary-muted: 207 45% 35%;
 
-    /* Secondary - Professional gray */
-    --secondary: 222 15% 18%;
-    --secondary-foreground: 210 30% 85%;
+    /* Secondary - Muted gray for reduced strain */
+    --secondary: 220 10% 15%;
+    --secondary-foreground: 210 15% 82%;
 
-    /* Muted states */
-    --muted: 222 15% 15%;
-    --muted-foreground: 215 15% 60%;
+    /* Muted states with better night contrast */
+    --muted: 220 10% 12%;
+    --muted-foreground: 215 12% 58%;
 
-    /* Accent - Electric cyan for highlights */
-    --accent: 180 100% 50%;
-    --accent-foreground: 222 23% 7%;
+    /* Accent - Softer cyan for night viewing */
+    --accent: 180 70% 42%;
+    --accent-foreground: 210 20% 90%;
     --accent-muted: 180 45% 35%;
 
-    /* Status colors */
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 95%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 222 23% 7%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 95%;
+    /* Status colors - Reduced intensity for night */
+    --success: 142 65% 38%;
+    --success-foreground: 210 20% 90%;
+    --warning: 38 85% 48%;
+    --warning-foreground: 220 15% 5%;
+    --destructive: 0 68% 48%;
+    --destructive-foreground: 210 20% 90%;
 
-    /* Interactive elements */
-    --border: 222 15% 20%;
-    --input: 222 15% 18%;
-    --ring: 207 89% 54%;
+    /* Interactive elements with subtle borders */
+    --border: 220 10% 18%;
+    --input: 220 10% 15%;
+    --ring: 207 70% 50%;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(207 89% 54%), hsl(207 89% 64%));
-    --gradient-accent: linear-gradient(135deg, hsl(180 100% 50%), hsl(195 100% 60%));
-    --gradient-surface: linear-gradient(180deg, hsl(222 20% 11%), hsl(222 18% 9%));
-    --gradient-glow: radial-gradient(circle at center, hsl(207 89% 54% / 0.15), transparent 70%);
+    /* Gradients with reduced glow */
+    --gradient-primary: linear-gradient(135deg, hsl(207 75% 48%), hsl(207 70% 58%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 70% 42%), hsl(195 70% 52%));
+    --gradient-surface: linear-gradient(180deg, hsl(220 12% 8%), hsl(220 10% 6%));
+    --gradient-glow: radial-gradient(circle at center, hsl(207 70% 48% / 0.1), transparent 70%);
 
-    /* Shadows and effects */
-    --shadow-card: 0 4px 12px -2px hsl(222 23% 4% / 0.8);
-    --shadow-elevated: 0 8px 24px -4px hsl(222 23% 4% / 0.9);
-    --shadow-glow: 0 0 20px hsl(207 89% 54% / 0.3);
+    /* Shadows and effects - Softer for night */
+    --shadow-card: 0 4px 12px -2px hsl(0 0% 0% / 0.6);
+    --shadow-elevated: 0 8px 24px -4px hsl(0 0% 0% / 0.7);
+    --shadow-glow: 0 0 20px hsl(207 70% 48% / 0.2);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -70,59 +70,81 @@ All colors MUST be HSL for proper theming
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar - Night vision optimized */
+    --sidebar-background: 220 12% 6%;
+    --sidebar-foreground: 210 15% 85%;
+    --sidebar-primary: 207 70% 48%;
+    --sidebar-primary-foreground: 210 20% 90%;
+    --sidebar-accent: 220 10% 12%;
+    --sidebar-accent-foreground: 210 15% 85%;
+    --sidebar-border: 220 10% 15%;
+    --sidebar-ring: 207 70% 50%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Ultra-deep blacks for OLED screens and reduced eye strain */
+    --background: 0 0% 2%;
+    --foreground: 210 15% 92%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    /* Deep card backgrounds with subtle warmth */
+    --card: 220 10% 4%;
+    --card-foreground: 210 15% 92%;
+    --card-elevated: 220 8% 6%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    /* Popover with enhanced depth */
+    --popover: 220 10% 3%;
+    --popover-foreground: 210 15% 92%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    /* Muted primary for reduced brightness */
+    --primary: 207 70% 45%;
+    --primary-foreground: 210 15% 92%;
+    --primary-glow: 207 60% 55%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    /* Warmer secondary tones */
+    --secondary: 220 8% 12%;
+    --secondary-foreground: 210 15% 88%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    /* Reduced contrast muted states */
+    --muted: 220 8% 10%;
+    --muted-foreground: 215 10% 55%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Softer accent for night viewing */
+    --accent: 180 60% 40%;
+    --accent-foreground: 210 15% 92%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    /* Softer status colors for night */
+    --success: 142 50% 35%;
+    --success-foreground: 210 15% 92%;
+    --warning: 38 80% 45%;
+    --warning-foreground: 0 0% 95%;
+    --destructive: 0 60% 42%;
+    --destructive-foreground: 210 15% 92%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Subtle borders and inputs */
+    --border: 220 8% 15%;
+    --input: 220 8% 12%;
+    --ring: 207 60% 50%;
+
+    /* Enhanced gradients for depth */
+    --gradient-primary: linear-gradient(135deg, hsl(207 70% 40%), hsl(207 60% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(180 60% 35%), hsl(195 60% 45%));
+    --gradient-surface: linear-gradient(180deg, hsl(220 10% 4%), hsl(220 8% 2%));
+    --gradient-glow: radial-gradient(circle at center, hsl(207 60% 45% / 0.08), transparent 70%);
+
+    /* Softer shadows */
+    --shadow-card: 0 4px 16px -2px hsl(0 0% 0% / 0.6);
+    --shadow-elevated: 0 8px 32px -4px hsl(0 0% 0% / 0.7);
+    --shadow-glow: 0 0 24px hsl(207 60% 45% / 0.15);
+
+    /* Sidebar with deeper tones */
+    --sidebar-background: 220 10% 3%;
+    --sidebar-foreground: 210 15% 88%;
+    --sidebar-primary: 207 60% 45%;
+    --sidebar-primary-foreground: 210 15% 92%;
+    --sidebar-accent: 220 8% 8%;
+    --sidebar-accent-foreground: 210 15% 88%;
+    --sidebar-border: 220 8% 12%;
+    --sidebar-ring: 207 60% 50%;
   }
 }
 
