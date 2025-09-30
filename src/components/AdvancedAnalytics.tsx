@@ -14,7 +14,13 @@ import {
   Award,
   Zap,
   Shield,
-  BarChart3
+  BarChart3,
+  Plus,
+  Edit,
+  Trash2,
+  CheckCircle,
+  AlertCircle,
+  FileEdit
 } from 'lucide-react';
 import {
   LineChart,
@@ -36,6 +42,8 @@ import {
   Radar
 } from 'recharts';
 import { analyticsService } from '@/lib/analyticsService';
+import { activityLogger } from '@/lib/activityLogger';
+import { formatDistanceToNow } from 'date-fns';
 
 interface AdvancedAnalyticsProps {
   projectTasks: ProjectTask[];
@@ -68,6 +76,11 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
     [projectTasks, adHocTasks, velocity]
   );
 
+  const recentActivity = useMemo(() => 
+    activityLogger.getActivityLog().slice(0, 15), 
+    [projectTasks, adHocTasks]
+  );
+
   const radarData = useMemo(() => 
     squadPerformance.slice(0, 5).map(squad => ({
       squad: squad.squadName.substring(0, 10),
@@ -77,6 +90,44 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
     })),
     [squadPerformance]
   );
+
+  const getActivityIcon = (action: string) => {
+    switch (action) {
+      case 'Task Created':
+        return <Plus className="h-4 w-4 text-primary" />;
+      case 'Task Updated':
+        return <Edit className="h-4 w-4 text-accent" />;
+      case 'Task Deleted':
+        return <Trash2 className="h-4 w-4 text-destructive" />;
+      case 'Status Changed':
+        return <CheckCircle className="h-4 w-4 text-success" />;
+      case 'Daily Log Added':
+        return <FileEdit className="h-4 w-4 text-warning" />;
+      case 'Security Sign-off Changed':
+        return <Shield className="h-4 w-4 text-primary" />;
+      default:
+        return <Activity className="h-4 w-4 text-muted-foreground" />;
+    }
+  };
+
+  const getActivityColor = (action: string) => {
+    switch (action) {
+      case 'Task Created':
+        return 'border-l-primary';
+      case 'Task Updated':
+        return 'border-l-accent';
+      case 'Task Deleted':
+        return 'border-l-destructive';
+      case 'Status Changed':
+        return 'border-l-success';
+      case 'Daily Log Added':
+        return 'border-l-warning';
+      case 'Security Sign-off Changed':
+        return 'border-l-primary';
+      default:
+        return 'border-l-muted-foreground';
+    }
+  };
 
   const getRiskColor = (score: number) => {
     if (score < 30) return 'text-success';
@@ -389,27 +440,84 @@ export const AdvancedAnalytics = ({ projectTasks, adHocTasks }: AdvancedAnalytic
         </Card>
       </div>
 
-      {/* Recommendations */}
-      {insights.recommendations.length > 0 && (
-        <Card className="bg-card shadow-card border-border">
-          <CardHeader className="p-4 sm:p-6 pb-3">
-            <CardTitle className="text-base sm:text-lg text-foreground flex items-center gap-2">
-              <Target className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
-              AI-Powered Recommendations
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 pt-0">
-            <div className="space-y-2">
-              {insights.recommendations.map((rec, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-accent mt-1.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{rec}</span>
+      {/* Activity Timeline */}
+      <Card className="bg-card shadow-card border-border">
+        <CardHeader className="p-4 sm:p-6 pb-3">
+          <CardTitle className="text-base sm:text-lg text-foreground flex items-center gap-2">
+            <Clock className="h-4 w-4 sm:h-5 sm:w-5 text-accent" />
+            Recent Activity Timeline
+            <Badge variant="secondary" className="ml-auto">
+              {recentActivity.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-4 sm:p-6 pt-0">
+          {recentActivity.length > 0 ? (
+            <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+              {recentActivity.map((activity) => (
+                <div 
+                  key={activity.id} 
+                  className={`flex gap-3 p-3 rounded-lg bg-muted/30 border-l-4 ${getActivityColor(activity.action)} hover:bg-muted/50 transition-colors`}
+                >
+                  <div className="flex-shrink-0 mt-0.5">
+                    {getActivityIcon(activity.action)}
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {activity.action}
+                        </p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {activity.taskName}
+                        </p>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={`text-[10px] flex-shrink-0 ${
+                          activity.taskType === 'project' 
+                            ? 'bg-primary/10 text-primary border-primary/20' 
+                            : 'bg-accent/10 text-accent border-accent/20'
+                        }`}
+                      >
+                        {activity.taskType === 'project' ? 'Project' : 'Ad-Hoc'}
+                      </Badge>
+                    </div>
+                    {activity.details && (
+                      <div className="text-xs text-muted-foreground">
+                        {activity.details.field && (
+                          <span>
+                            {activity.details.oldValue && activity.details.newValue ? (
+                              <>
+                                <span className="text-destructive line-through">{activity.details.oldValue}</span>
+                                {' → '}
+                                <span className="text-success">{activity.details.newValue}</span>
+                              </>
+                            ) : activity.details.newValue ? (
+                              <span className="text-success">{activity.details.newValue}</span>
+                            ) : (
+                              <span>{activity.details.field}</span>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {formatDistanceToNow(new Date(activity.timestamp), { addSuffix: true })}
+                    </p>
+                  </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p className="text-sm">No recent activity</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
