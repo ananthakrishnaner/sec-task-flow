@@ -33,6 +33,7 @@ const Index = () => {
   const [isExporting, setIsExporting] = useState(false);
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState('project');
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     includeProjectTasks: true,
     includeAdHocTasks: true,
@@ -547,7 +548,7 @@ const Index = () => {
         <TaskChartsSection metrics={metrics} />
 
         {/* Task Management Tabs */}
-        <Tabs defaultValue="project" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <TabsList className="bg-card border border-border grid grid-cols-3 lg:grid-cols-6 w-full lg:w-auto">
               <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
@@ -581,7 +582,10 @@ const Index = () => {
 
             <div className="flex flex-col sm:flex-row gap-2">
               <Button 
-                onClick={() => setShowProjectForm(true)}
+                onClick={() => {
+                  setActiveTab('project');
+                  setShowProjectForm(true);
+                }}
                 className="bg-primary hover:bg-primary-glow text-primary-foreground"
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -589,7 +593,10 @@ const Index = () => {
                 <span className="sm:hidden">Project</span>
               </Button>
               <Button 
-                onClick={() => setShowAdHocForm(true)}
+                onClick={() => {
+                  setActiveTab('adhoc');
+                  setShowAdHocForm(true);
+                }}
                 className="bg-accent hover:bg-accent-muted text-accent-foreground"
               >
                 <Plus className="h-4 w-4 mr-2" />
