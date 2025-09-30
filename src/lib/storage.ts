@@ -230,33 +230,44 @@ export const storageService = {
   },
 
   // Download JSON backup
-  downloadJsonBackup(): void {
+  async downloadJsonBackup(): Promise<void> {
     try {
       const backup = localStorage.getItem('cet_data_backup');
+      let dataToExport: TaskData;
+      
       if (!backup) {
         // If no backup in localStorage, try to get current data
-        this.loadData().then(data => {
-          const jsonString = JSON.stringify(data, null, 2);
-          this.downloadJsonData(jsonString);
-        }).catch(() => {
-          throw new Error('No backup data available and unable to load current data');
-        });
-        return;
+        console.log('No backup found, loading current data');
+        dataToExport = await this.loadData();
+        
+        if (!dataToExport || (!dataToExport.projectTasks.length && !dataToExport.adHocTasks.length)) {
+          throw new Error('No data available to export');
+        }
+      } else {
+        // Validate backup before download
+        try {
+          dataToExport = JSON.parse(backup);
+          if (!dataToExport || !Array.isArray(dataToExport.projectTasks) || !Array.isArray(dataToExport.adHocTasks)) {
+            throw new Error('Invalid backup data structure');
+          }
+        } catch (parseError) {
+          console.error('Corrupted backup data, loading fresh data', parseError);
+          dataToExport = await this.loadData();
+        }
       }
       
-      // Validate backup before download
-      try {
-        const parsedData = JSON.parse(backup);
-        if (!parsedData || !Array.isArray(parsedData.projectTasks) || !Array.isArray(parsedData.adHocTasks)) {
-          throw new Error('Invalid backup data structure');
-        }
-        
-        // Format JSON for better readability
-        const formattedJson = JSON.stringify(parsedData, null, 2);
-        this.downloadJsonData(formattedJson);
-      } catch (parseError) {
-        throw new Error('Backup data is corrupted');
+      // Ensure metadata exists
+      if (!dataToExport.metadata) {
+        dataToExport.metadata = {
+          lastUpdated: new Date().toISOString(),
+          version: "1.0.0"
+        };
       }
+      
+      // Format JSON for better readability
+      const formattedJson = JSON.stringify(dataToExport, null, 2);
+      this.downloadJsonData(formattedJson);
+      console.log('JSON backup downloaded successfully');
     } catch (error) {
       console.error('Error downloading JSON backup:', error);
       throw error;

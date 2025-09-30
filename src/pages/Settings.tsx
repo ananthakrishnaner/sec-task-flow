@@ -19,18 +19,19 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const handleDownloadJsonBackup = () => {
+  const handleDownloadJsonBackup = async () => {
     try {
-      storageService.downloadJsonBackup();
+      await storageService.downloadJsonBackup();
       toast({
         title: "Backup Downloaded",
         description: "JSON backup file has been downloaded successfully.",
       });
     } catch (error) {
       console.error('Error downloading backup:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       toast({
         title: "Download Failed",
-        description: "Failed to download backup. Please try again.",
+        description: `Failed to download backup: ${errorMessage}`,
         variant: "destructive",
       });
     }
