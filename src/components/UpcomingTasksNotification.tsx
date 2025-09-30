@@ -377,22 +377,26 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   }, []);
 
   return (
-    <div className="min-w-[900px]">
+    <div className="min-w-[1000px]">
       {/* Timeline Header */}
-      <div className="flex border-b border-border mb-4 pb-2">
-        <div className="w-48 flex-shrink-0 font-semibold text-sm text-muted-foreground">Task</div>
-        <div className="flex-1 grid grid-cols-15 gap-px">
+      <div className="flex border-b border-border mb-4 pb-3">
+        <div className="w-56 flex-shrink-0 font-semibold text-sm text-foreground px-4">Task Details</div>
+        <div className="flex-1 flex">
           {dateColumns.map((date, idx) => {
             const isToday = startOfDay(date).getTime() === today.getTime();
             return (
               <div
                 key={idx}
-                className={`text-center text-xs ${
-                  isToday ? 'text-primary font-bold' : 'text-muted-foreground'
+                className={`flex-1 text-center text-xs border-l border-border/30 px-1 ${
+                  isToday ? 'bg-primary/10' : ''
                 }`}
               >
-                <div className="font-medium">{format(date, 'dd')}</div>
-                <div className="text-[10px]">{format(date, 'EEE')}</div>
+                <div className={`font-semibold ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                  {format(date, 'dd')}
+                </div>
+                <div className={`text-[10px] ${isToday ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {format(date, 'EEE')}
+                </div>
               </div>
             );
           })}
@@ -400,95 +404,117 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
       </div>
 
       {/* Timeline Tasks */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         {tasks.map((task) => {
           const dueDate = startOfDay(new Date(task.dueDate));
           const daysDiff = differenceInDays(dueDate, timelineStart);
           const urgency = getTaskUrgency(task.daysUntilDue);
           const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
           
-          // Calculate bar position and width
-          const barStart = Math.max(0, Math.min(14, daysDiff));
-          const barWidth = 1;
+          // Calculate bar position (0-14 days range)
+          const barPosition = Math.max(0, Math.min(14, daysDiff));
           
           return (
-            <div key={task.id} className="flex items-center group">
-              {/* Task Name */}
-              <div className="w-48 flex-shrink-0 pr-4">
-                <div className="flex items-center gap-2">
+            <div key={task.id} className="flex items-center group hover:bg-muted/30 rounded-md transition-colors py-2">
+              {/* Task Info */}
+              <div className="w-56 flex-shrink-0 px-4">
+                <div className="flex items-center gap-2 mb-1">
                   {task.type === 'project' ? (
                     <Target className="h-3 w-3 text-primary flex-shrink-0" />
                   ) : (
                     <Zap className="h-3 w-3 text-accent flex-shrink-0" />
                   )}
-                  <span className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                  <span className="text-sm font-medium text-foreground truncate">
                     {task.taskName}
                   </span>
                 </div>
                 {task.squadName && (
-                  <div className="text-xs text-muted-foreground mt-1 ml-5 truncate">
+                  <div className="text-xs text-muted-foreground ml-5 truncate">
                     {task.squadName}
                   </div>
                 )}
+                <div className="flex items-center gap-2 mt-1 ml-5">
+                  <Badge className={`${urgency.color} text-[10px] px-1 py-0`}>
+                    {urgency.label}
+                  </Badge>
+                </div>
               </div>
 
               {/* Timeline Grid */}
-              <div className="flex-1 grid grid-cols-15 gap-px relative">
-                {/* Background cells */}
+              <div className="flex-1 flex relative h-12">
+                {/* Background cells with borders */}
                 {dateColumns.map((date, idx) => {
                   const isToday = startOfDay(date).getTime() === today.getTime();
                   return (
                     <div
                       key={idx}
-                      className={`h-12 border-r border-border/30 ${
+                      className={`flex-1 border-l border-border/30 ${
                         isToday ? 'bg-primary/5' : ''
                       }`}
                     />
                   );
                 })}
 
-                {/* Task Bar */}
+                {/* Task Marker */}
                 <div
-                  className="absolute top-1/2 -translate-y-1/2 h-8 rounded group-hover:scale-105 transition-transform cursor-pointer"
+                  className="absolute top-1/2 -translate-y-1/2 transform -translate-x-1/2 z-10"
                   style={{
-                    left: `${(barStart / 15) * 100}%`,
-                    width: `${(barWidth / 15) * 100}%`,
+                    left: `${((barPosition + 0.5) / 15) * 100}%`,
                   }}
                 >
-                  <div
-                    className={`h-full rounded flex items-center justify-center px-2 ${
-                      isUrgent
-                        ? 'bg-destructive border-2 border-destructive'
-                        : urgency.level === 'high'
-                        ? 'bg-warning border-2 border-warning'
-                        : urgency.level === 'medium'
-                        ? 'bg-warning/60 border-2 border-warning/60'
-                        : 'bg-primary border-2 border-primary'
-                    }`}
-                  >
-                    <div className="w-2 h-2 bg-white rounded-full" />
-                  </div>
-                  
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
-                    <div className="bg-popover border border-border rounded-lg shadow-elevated p-3 min-w-[200px]">
-                      <div className="font-semibold text-sm text-foreground mb-1">{task.taskName}</div>
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{format(dueDate, 'MMM dd, yyyy')}</span>
+                  <div className="relative group/marker cursor-pointer">
+                    {/* Marker dot */}
+                    <div
+                      className={`w-4 h-4 rounded-full border-2 shadow-lg transition-all group-hover/marker:scale-125 ${
+                        isUrgent
+                          ? 'bg-destructive border-destructive shadow-destructive/50'
+                          : urgency.level === 'high'
+                          ? 'bg-warning border-warning shadow-warning/50'
+                          : urgency.level === 'medium'
+                          ? 'bg-warning/70 border-warning/70 shadow-warning/30'
+                          : 'bg-primary border-primary shadow-primary/50'
+                      }`}
+                    />
+                    
+                    {/* Line from task name to marker */}
+                    <div 
+                      className={`absolute top-1/2 right-full h-0.5 opacity-30 ${
+                        isUrgent ? 'bg-destructive' : 'bg-primary'
+                      }`}
+                      style={{
+                        width: `${56 * 4 + (barPosition / 15) * 100}px`
+                      }}
+                    />
+
+                    {/* Hover Tooltip */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 hidden group-hover/marker:block z-20 pointer-events-none">
+                      <div className="bg-popover border border-border rounded-lg shadow-elevated p-3 min-w-[220px] max-w-[300px]">
+                        <div className="font-semibold text-sm text-foreground mb-2">{task.taskName}</div>
+                        <div className="text-xs text-muted-foreground space-y-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="h-3 w-3 flex-shrink-0" />
+                            <span>{format(dueDate, 'MMM dd, yyyy')}</span>
+                          </div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge className={`${urgency.color} text-xs`}>
+                              {urgency.label}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs">
+                              {task.status}
+                            </Badge>
+                          </div>
+                          {task.description && (
+                            <p className="text-xs mt-2 pt-2 border-t border-border line-clamp-3">
+                              {task.description}
+                            </p>
+                          )}
+                          {task.spoc && (
+                            <div className="flex items-center gap-1.5 mt-2 pt-2 border-t border-border">
+                              <User className="h-3 w-3 flex-shrink-0" />
+                              <span className="font-medium">{task.spoc}</span>
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Badge className={`${urgency.color} text-xs`}>
-                            {urgency.label}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {task.status}
-                          </Badge>
-                        </div>
-                        {task.description && (
-                          <p className="text-xs mt-2 line-clamp-2">{task.description}</p>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -499,11 +525,25 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
         })}
       </div>
 
-      {/* Today Indicator Line */}
-      <div className="absolute top-0 bottom-0 border-l-2 border-primary pointer-events-none"
-        style={{ left: 'calc(12rem + 0%)' }}>
-        <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-[10px] px-1 rounded">
-          Today
+      {/* Legend */}
+      <div className="mt-6 pt-4 border-t border-border">
+        <div className="flex items-center gap-6 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-destructive border-2 border-destructive" />
+            <span>Overdue/Critical</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-warning border-2 border-warning" />
+            <span>High Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-warning/70 border-2 border-warning/70" />
+            <span>Medium Priority</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full bg-primary border-2 border-primary" />
+            <span>Normal</span>
+          </div>
         </div>
       </div>
     </div>
