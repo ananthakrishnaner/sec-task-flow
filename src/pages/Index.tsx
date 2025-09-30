@@ -548,10 +548,14 @@ const Index = () => {
         {/* Task Management Tabs */}
         <Tabs defaultValue="project" className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <TabsList className="bg-card border border-border grid grid-cols-2 lg:grid-cols-5 w-full lg:w-auto">
+            <TabsList className="bg-card border border-border grid grid-cols-3 lg:grid-cols-6 w-full lg:w-auto">
               <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Project Tasks</span>
                 <span className="sm:hidden">Projects</span>
+              </TabsTrigger>
+              <TabsTrigger value="current" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
+                <span className="hidden sm:inline">Current Tasks</span>
+                <span className="sm:hidden">Current</span>
               </TabsTrigger>
               <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Ad-Hoc Tasks</span>
@@ -604,6 +608,43 @@ const Index = () => {
               tasks={projectTasks}
               onUpdateTasks={handleUpdateProjectTasks}
             />
+          </TabsContent>
+
+          <TabsContent value="current" className="space-y-6">
+            <Card className="bg-card shadow-card border-border">
+              <CardHeader>
+                <CardTitle className="text-foreground">Current Tasks (Non-Completed)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {projectTasks.filter(task => task.status !== 'Complete').length === 0 && 
+                   adHocTasks.filter(task => task.status !== 'Complete').length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No current tasks. All tasks are completed! 🎉</p>
+                  ) : (
+                    <>
+                      {projectTasks.filter(task => task.status !== 'Complete').length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-foreground">Project Tasks</h3>
+                          <ProjectTasksList 
+                            tasks={projectTasks.filter(task => task.status !== 'Complete')}
+                            onUpdateTasks={handleUpdateProjectTasks}
+                          />
+                        </div>
+                      )}
+                      {adHocTasks.filter(task => task.status !== 'Complete').length > 0 && (
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-semibold text-foreground">Ad-Hoc Tasks</h3>
+                          <AdHocTasksList 
+                            tasks={adHocTasks.filter(task => task.status !== 'Complete')}
+                            onUpdateTasks={handleUpdateAdHocTasks}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="adhoc" className="space-y-6">
