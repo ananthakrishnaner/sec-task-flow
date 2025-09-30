@@ -470,6 +470,16 @@ const Index = () => {
                           />
                           <Label htmlFor="metrics" className="text-foreground">Summary Metrics</Label>
                         </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox 
+                            id="dailyLogs"
+                            checked={exportOptions.includeDailyLogs}
+                            onCheckedChange={(checked) => 
+                              setExportOptions(prev => ({ ...prev, includeDailyLogs: !!checked }))
+                            }
+                          />
+                          <Label htmlFor="dailyLogs" className="text-foreground">Daily Progress</Label>
+                        </div>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">
