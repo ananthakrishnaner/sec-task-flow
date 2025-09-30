@@ -394,14 +394,14 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       {/* Header - Mobile Optimized */}
       <header className="border-b border-border bg-card shadow-card sticky top-0 z-40">
-        <div className="container mx-auto px-4 py-3 sm:px-6 sm:py-4">
+        <div className="container mx-auto px-3 py-2 sm:px-6 sm:py-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0 flex-1">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-primary flex-shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+              <div className="p-1 sm:p-2 rounded-lg bg-gradient-primary flex-shrink-0">
                 <Shield className="h-4 w-4 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
+                <h1 className="text-lg sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate">
                   TRACKER
                 </h1>
                 <p className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">
@@ -538,7 +538,7 @@ const Index = () => {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-4 sm:px-6 sm:py-8">
+      <main className="container mx-auto px-3 py-4 sm:px-6 sm:py-6">
         {/* Metrics Dashboard */}
         <DashboardMetrics metrics={metrics} />
 

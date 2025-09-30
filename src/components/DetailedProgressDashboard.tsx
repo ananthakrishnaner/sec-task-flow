@@ -418,17 +418,17 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Filter Controls */}
       <Card className="bg-card shadow-card border-border">
-        <CardHeader>
-          <CardTitle className="text-foreground flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Task Filters & Analytics
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-foreground flex items-center gap-2 text-base sm:text-lg">
+            <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="truncate">Task Filters & Analytics</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+        <CardContent className="p-4 sm:p-6 pt-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3 sm:gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Status</label>
               <Select 

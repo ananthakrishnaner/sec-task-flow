@@ -150,12 +150,12 @@ export const UpcomingTasksNotification = ({ projectTasks, adHocTasks }: Upcoming
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Critical Alert Banner */}
       {(urgencyStats.overdue > 0 || urgencyStats.critical > 0) && (
-        <Alert className="border-destructive/50 bg-destructive/10">
+        <Alert className="border-destructive/50 bg-destructive/10 p-3 sm:p-4">
           <AlertTriangle className="h-4 w-4 text-destructive" />
-          <AlertDescription className="text-destructive">
+          <AlertDescription className="text-destructive text-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div className="flex-1">
                 <span className="font-semibold">
@@ -172,43 +172,43 @@ export const UpcomingTasksNotification = ({ projectTasks, adHocTasks }: Upcoming
 
       {/* Filter and Stats */}
       <Card className="bg-card shadow-card border-border">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <CardTitle className="text-foreground flex items-center gap-2">
-              <Bell className="h-5 w-5 text-warning" />
-              Upcoming Deployments & Due Tasks
-              <Badge variant="secondary" className="ml-2">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <CardTitle className="text-foreground flex items-center gap-2 text-base sm:text-lg">
+              <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-warning flex-shrink-0" />
+              <span className="truncate">Upcoming Deployments</span>
+              <Badge variant="secondary" className="ml-auto sm:ml-2 flex-shrink-0">
                 {upcomingTasks.length}
               </Badge>
             </CardTitle>
             
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1 border border-border rounded-md p-1 bg-muted/50">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-0.5 sm:gap-1 border border-border rounded-md p-0.5 sm:p-1 bg-muted/50">
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('list')}
-                  className="h-7 px-2"
+                  className="h-7 px-1.5 sm:px-2"
                 >
-                  <LayoutList className="h-4 w-4" />
+                  <LayoutList className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
                   variant={viewMode === 'timeline' ? 'secondary' : 'ghost'}
                   size="sm"
                   onClick={() => setViewMode('timeline')}
-                  className="h-7 px-2"
+                  className="h-7 px-1.5 sm:px-2"
                 >
-                  <CalendarRange className="h-4 w-4" />
+                  <CalendarRange className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </Button>
               </div>
               
-              <Filter className="h-4 w-4 text-muted-foreground" />
+              <Filter className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground hidden sm:inline-block" />
               <Select value={filter} onValueChange={(value: FilterOption) => setFilter(value)}>
-                <SelectTrigger className="w-40 bg-input border-border">
+                <SelectTrigger className="flex-1 sm:w-40 bg-input border-border text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-popover border-border">
-                  <SelectItem value="all">All Tasks ({upcomingTasks.length})</SelectItem>
+                  <SelectItem value="all">All ({upcomingTasks.length})</SelectItem>
                   {urgencyStats.overdue > 0 && <SelectItem value="overdue">Overdue ({urgencyStats.overdue})</SelectItem>}
                   {urgencyStats.critical > 0 && <SelectItem value="critical">Critical ({urgencyStats.critical})</SelectItem>}
                   {urgencyStats.high > 0 && <SelectItem value="high">High ({urgencyStats.high})</SelectItem>}
@@ -221,50 +221,50 @@ export const UpcomingTasksNotification = ({ projectTasks, adHocTasks }: Upcoming
           </div>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="p-4 sm:p-6">
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4 mb-4 sm:mb-6">
             {urgencyStats.overdue > 0 && (
-              <div className="text-center p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <div className="text-lg font-bold text-destructive">{urgencyStats.overdue}</div>
-                <div className="text-xs text-destructive">Overdue</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="text-base sm:text-lg font-bold text-destructive">{urgencyStats.overdue}</div>
+                <div className="text-[10px] sm:text-xs text-destructive">Overdue</div>
               </div>
             )}
             {urgencyStats.critical > 0 && (
-              <div className="text-center p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-                <div className="text-lg font-bold text-destructive">{urgencyStats.critical}</div>
-                <div className="text-xs text-destructive">Due Today</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-destructive/10 border border-destructive/20">
+                <div className="text-base sm:text-lg font-bold text-destructive">{urgencyStats.critical}</div>
+                <div className="text-[10px] sm:text-xs text-destructive">Due Today</div>
               </div>
             )}
             {urgencyStats.high > 0 && (
-              <div className="text-center p-3 rounded-lg bg-warning/10 border border-warning/20">
-                <div className="text-lg font-bold text-warning">{urgencyStats.high}</div>
-                <div className="text-xs text-warning-foreground">Due Tomorrow</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-warning/10 border border-warning/20">
+                <div className="text-base sm:text-lg font-bold text-warning">{urgencyStats.high}</div>
+                <div className="text-[10px] sm:text-xs text-warning-foreground">Tomorrow</div>
               </div>
             )}
             {urgencyStats.medium > 0 && (
-              <div className="text-center p-3 rounded-lg bg-warning/5 border border-warning/10">
-                <div className="text-lg font-bold text-warning">{urgencyStats.medium}</div>
-                <div className="text-xs text-muted-foreground">2-3 Days</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-warning/5 border border-warning/10">
+                <div className="text-base sm:text-lg font-bold text-warning">{urgencyStats.medium}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">2-3 Days</div>
               </div>
             )}
             {urgencyStats.low > 0 && (
-              <div className="text-center p-3 rounded-lg bg-muted/10 border border-muted/20">
-                <div className="text-lg font-bold text-muted-foreground">{urgencyStats.low}</div>
-                <div className="text-xs text-muted-foreground">This Week</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/10 border border-muted/20">
+                <div className="text-base sm:text-lg font-bold text-muted-foreground">{urgencyStats.low}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">This Week</div>
               </div>
             )}
             {urgencyStats.upcoming > 0 && (
-              <div className="text-center p-3 rounded-lg bg-muted/5 border border-muted/10">
-                <div className="text-lg font-bold text-muted-foreground">{urgencyStats.upcoming}</div>
-                <div className="text-xs text-muted-foreground">Next Week</div>
+              <div className="text-center p-2 sm:p-3 rounded-lg bg-muted/5 border border-muted/10">
+                <div className="text-base sm:text-lg font-bold text-muted-foreground">{urgencyStats.upcoming}</div>
+                <div className="text-[10px] sm:text-xs text-muted-foreground">Next Week</div>
               </div>
             )}
           </div>
 
           {/* Task View - List or Timeline */}
           {viewMode === 'list' ? (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {filteredTasks.map((task) => {
                 const urgency = getTaskUrgency(task.daysUntilDue);
                 const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
@@ -272,60 +272,61 @@ export const UpcomingTasksNotification = ({ projectTasks, adHocTasks }: Upcoming
                 return (
                   <Card
                     key={task.id}
-                    className={`p-4 transition-all duration-200 hover:shadow-md ${
+                    className={`p-3 sm:p-4 transition-all duration-200 hover:shadow-md ${
                       isUrgent ? 'border-destructive/30 bg-destructive/5' : 'border-border'
                     }`}
                   >
-                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-3 sm:gap-4">
                       <div className="flex-1 min-w-0 space-y-2">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h4 className="font-semibold text-foreground truncate">{task.taskName}</h4>
+                        <div className="flex items-start sm:items-center gap-2 mb-2">
+                          <h4 className="font-semibold text-sm sm:text-base text-foreground line-clamp-2 sm:truncate flex-1">{task.taskName}</h4>
                           <Badge 
                             variant="secondary" 
-                            className={`text-xs flex-shrink-0 ${
+                            className={`text-[10px] sm:text-xs flex-shrink-0 ${
                               task.type === 'project' 
                                 ? 'bg-primary/10 text-primary' 
                                 : 'bg-accent/10 text-accent'
                             }`}
                           >
                             {task.type === 'project' ? (
-                              <Target className="h-3 w-3 mr-1" />
+                              <Target className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                             ) : (
-                              <Zap className="h-3 w-3 mr-1" />
+                              <Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
                             )}
-                            {task.type === 'project' ? 'Project' : 'Ad-Hoc'}
+                            <span className="hidden sm:inline">{task.type === 'project' ? 'Project' : 'Ad-Hoc'}</span>
+                            <span className="sm:hidden">{task.type === 'project' ? 'P' : 'A'}</span>
                           </Badge>
                         </div>
                         
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                           {task.description}
                         </p>
                         
-                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            <span>{formatDueDate(task.dueDate)}</span>
+                            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                            <span className="truncate">{formatDueDate(task.dueDate)}</span>
                           </div>
                           {task.squadName && (
                             <div className="hidden sm:flex items-center gap-1">
                               <User className="h-3 w-3" />
-                              <span>{task.squadName}</span>
+                              <span className="truncate">{task.squadName}</span>
                             </div>
                           )}
                           {task.spoc && (
                             <div className="hidden lg:flex items-center gap-1">
                               <span>SPOC:</span>
-                              <span className="font-medium">{task.spoc}</span>
+                              <span className="font-medium truncate">{task.spoc}</span>
                             </div>
                           )}
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <Badge className={urgency.color}>
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0 flex-wrap">
+                        <Badge className={`text-[10px] sm:text-xs ${urgency.color}`}>
                           {urgency.label}
                         </Badge>
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-[10px] sm:text-xs">
                           {task.status}
                         </Badge>
                       </div>
