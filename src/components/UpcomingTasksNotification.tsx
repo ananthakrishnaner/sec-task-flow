@@ -29,7 +29,7 @@ interface UpcomingTask {
 
 type FilterOption = 'all' | 'critical' | 'high' | 'medium' | 'low';
 type ViewMode = 'list' | 'timeline';
-type CalendarViewMode = 'grid' | 'picker' | 'month';
+type CalendarViewMode = 'grid' | 'picker' | 'month' | 'week';
 
 export const UpcomingTasksNotification = ({ projectTasks, adHocTasks }: UpcomingTasksNotificationProps) => {
   const [filter, setFilter] = useState<FilterOption>('all');
@@ -420,7 +420,7 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   return (
     <div className="w-full space-y-4">
       {/* Toggle Calendar View Mode */}
-      <div className="flex items-center justify-center gap-2 mb-4">
+      <div className="flex items-center justify-center gap-2 mb-4 flex-wrap">
         <Button
           variant={calendarViewMode === 'grid' ? 'default' : 'outline'}
           size="sm"
@@ -436,6 +436,14 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
           className="h-8"
         >
           Month View
+        </Button>
+        <Button
+          variant={calendarViewMode === 'week' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setCalendarViewMode('week')}
+          className="h-8"
+        >
+          Week View
         </Button>
         <Button
           variant={calendarViewMode === 'picker' ? 'default' : 'outline'}
@@ -470,6 +478,17 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
           setMonthOffset={setMonthOffset}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          today={today}
+          tasksByDate={tasksByDate}
+          getTaskUrgency={getTaskUrgency}
+        />
+      )}
+
+      {calendarViewMode === 'week' && (
+        <WeekCalendarView 
+          weekOffset={weekOffset}
+          setWeekOffset={setWeekOffset}
+          canGoBack={canGoBack}
           today={today}
           tasksByDate={tasksByDate}
           getTaskUrgency={getTaskUrgency}
@@ -1071,6 +1090,221 @@ const MonthCalendarView = ({
             <span className="text-muted-foreground">Normal</span>
           </div>
         </div>
+      </div>
+    </>
+  );
+};
+
+// Week Calendar View Component
+interface WeekCalendarViewProps {
+  weekOffset: number;
+  setWeekOffset: (offset: number | ((prev: number) => number)) => void;
+  canGoBack: boolean;
+  today: Date;
+  tasksByDate: { [key: string]: UpcomingTask[] };
+  getTaskUrgency: (daysUntilDue: number) => { level: string; label: string; color: string };
+}
+
+const WeekCalendarView = ({
+  weekOffset,
+  setWeekOffset,
+  canGoBack,
+  today,
+  tasksByDate,
+  getTaskUrgency
+}: WeekCalendarViewProps) => {
+  // Create 7 days for the week view
+  const weekDays = useMemo(() => {
+    const days = [];
+    const startDate = addDays(today, weekOffset * 7);
+    for (let i = 0; i < 7; i++) {
+      days.push(addDays(startDate, i));
+    }
+    return days;
+  }, [weekOffset, today]);
+
+  return (
+    <>
+      {/* Week Navigation */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWeekOffset(prev => prev - 1)}
+          disabled={!canGoBack}
+          className="h-8"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Previous Week
+        </Button>
+        
+        <div className="text-lg font-semibold text-foreground flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-primary" />
+          {weekOffset === 0 ? (
+            "This Week"
+          ) : (
+            `${format(weekDays[0], 'MMM d')} - ${format(weekDays[6], 'MMM d, yyyy')}`
+          )}
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setWeekOffset(prev => prev + 1)}
+          className="h-8"
+        >
+          Next Week
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+
+      {/* Week Days List */}
+      <div className="space-y-4">
+        {weekDays.map((date) => {
+          const dateKey = format(date, 'yyyy-MM-dd');
+          const isToday = startOfDay(date).getTime() === today.getTime();
+          const tasksForDate = tasksByDate[dateKey] || [];
+          const isPast = date < today && !isToday;
+
+          return (
+            <div
+              key={dateKey}
+              className={`rounded-lg border-2 transition-all ${
+                isToday 
+                  ? 'border-primary bg-primary/5 shadow-md' 
+                  : isPast 
+                  ? 'border-border/50 bg-muted/30' 
+                  : 'border-border bg-card'
+              }`}
+            >
+              {/* Day Header */}
+              <div className={`p-4 border-b-2 ${
+                isToday ? 'border-primary/30 bg-primary/10' : 'border-border'
+              }`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className={`text-center ${isToday ? 'text-primary' : 'text-foreground'}`}>
+                      <div className="text-3xl font-bold">
+                        {format(date, 'd')}
+                      </div>
+                      <div className="text-sm font-medium">
+                        {format(date, 'EEE')}
+                      </div>
+                    </div>
+                    <div className="border-l-2 border-border pl-3">
+                      <div className="font-semibold text-foreground">
+                        {format(date, 'EEEE')}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {format(date, 'MMMM d, yyyy')}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {tasksForDate.length > 0 && (
+                    <Badge variant="secondary" className="text-sm">
+                      {tasksForDate.length} task{tasksForDate.length > 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                  
+                  {isToday && (
+                    <Badge className="bg-primary text-primary-foreground">
+                      Today
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Tasks List */}
+              <div className="p-4">
+                {tasksForDate.length > 0 ? (
+                  <div className="space-y-3">
+                    {tasksForDate.map((task) => {
+                      const urgency = getTaskUrgency(task.daysUntilDue);
+                      const isUrgent = urgency.level === 'overdue' || urgency.level === 'critical';
+                      
+                      return (
+                        <div
+                          key={task.id}
+                          className={`p-3 rounded-lg border-2 transition-all hover:shadow-md ${
+                            isUrgent 
+                              ? 'border-destructive/30 bg-destructive/5' 
+                              : 'border-border bg-card'
+                          }`}
+                        >
+                          {/* Task Header */}
+                          <div className="flex items-start gap-3 mb-2">
+                            {task.type === 'project' ? (
+                              <Target className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                            ) : (
+                              <Zap className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-semibold text-foreground mb-1">
+                                {task.taskName}
+                              </h4>
+                              {task.description && (
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                  {task.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Task Details */}
+                          <div className="flex flex-wrap items-center gap-2 text-xs ml-8">
+                            {/* Type Badge */}
+                            <Badge 
+                              variant="secondary" 
+                              className={`${
+                                task.type === 'project' 
+                                  ? 'bg-primary/10 text-primary border-primary/20' 
+                                  : 'bg-accent/10 text-accent border-accent/20'
+                              }`}
+                            >
+                              {task.type === 'project' ? 'Project' : 'Ad-Hoc'}
+                            </Badge>
+
+                            {/* Status Badge */}
+                            <Badge variant="outline">
+                              {task.status}
+                            </Badge>
+
+                            {/* Urgency Badge */}
+                            <Badge className={urgency.color}>
+                              {urgency.label}
+                            </Badge>
+
+                            {/* Squad */}
+                            {task.squadName && (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <User className="h-3 w-3" />
+                                <span>{task.squadName}</span>
+                              </div>
+                            )}
+
+                            {/* SPOC */}
+                            {task.spoc && (
+                              <div className="flex items-center gap-1 text-muted-foreground">
+                                <span>SPOC:</span>
+                                <span className="font-medium">{task.spoc}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No tasks scheduled for this day</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </>
   );
