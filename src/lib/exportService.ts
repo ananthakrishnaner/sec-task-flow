@@ -260,13 +260,13 @@ export const exportService = {
     doc.text('Executive Summary', 20, yPosition);
     yPosition += 15;
 
-    // Task Status Distribution Chart (Simple visual representation)
+    // Task Status Distribution Chart (Pie Chart representation)
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('Task Status Distribution', 20, yPosition);
     yPosition += 10;
 
-    // Create visual bars for status distribution
+    // Create pie chart for status distribution
     const statusColors = {
       'Complete': [16, 185, 129],
       'In Progress': [59, 130, 246],
@@ -275,25 +275,88 @@ export const exportService = {
       'To Do': [156, 163, 175]
     };
 
-    const maxValue = Math.max(...Object.values(metrics.statusDistribution));
-    const barWidth = 120;
-    let barY = yPosition;
+    const total = Object.values(metrics.statusDistribution).reduce((sum, count) => sum + count, 0);
+    
+    if (total > 0) {
+      const centerX = 100;
+      const centerY = yPosition + 40;
+      const radius = 30;
+      let startAngle = 0;
 
-    Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
-      const barLength = maxValue > 0 ? (count / maxValue) * barWidth : 0;
-      const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
-      
-      doc.setFillColor(color[0], color[1], color[2]);
-      doc.rect(80, barY - 3, barLength, 8, 'F');
-      
-      doc.setTextColor(0, 0, 0);
+      // Draw pie slices
+      Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
+        if (count > 0) {
+          const percentage = count / total;
+          const sliceAngle = percentage * 2 * Math.PI;
+          const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
+          
+          // Draw pie slice using polygon approximation
+          doc.setFillColor(color[0], color[1], color[2]);
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(0.5);
+          
+          // Create points for the slice
+          const points: number[] = [centerX, centerY]; // Start at center
+          const numSegments = Math.max(3, Math.ceil(sliceAngle / (Math.PI / 12))); // More segments for larger slices
+          
+          for (let i = 0; i <= numSegments; i++) {
+            const angle = startAngle + (sliceAngle * i) / numSegments;
+            const x = centerX + radius * Math.cos(angle);
+            const y = centerY + radius * Math.sin(angle);
+            points.push(x, y);
+          }
+          
+          // Draw the filled polygon
+          if (points.length >= 6) {
+            doc.setFillColor(color[0], color[1], color[2]);
+            const triangles: number[][] = [];
+            
+            // Create triangles from center to edge points
+            for (let i = 2; i < points.length - 2; i += 2) {
+              triangles.push([
+                points[0], points[1], // center
+                points[i], points[i + 1], // current point
+                points[i + 2], points[i + 3] // next point
+              ]);
+            }
+            
+            // Draw each triangle
+            triangles.forEach(triangle => {
+              doc.triangle(triangle[0], triangle[1], triangle[2], triangle[3], triangle[4], triangle[5], 'F');
+            });
+          }
+          
+          startAngle += sliceAngle;
+        }
+      });
+
+      // Add legend to the right of the pie chart
+      let legendY = yPosition + 10;
+      Object.entries(metrics.statusDistribution).forEach(([status, count]) => {
+        if (count > 0) {
+          const color = statusColors[status as keyof typeof statusColors] || [128, 128, 128];
+          const percentage = ((count / total) * 100).toFixed(1);
+          
+          // Draw color box
+          doc.setFillColor(color[0], color[1], color[2]);
+          doc.rect(140, legendY - 3, 8, 6, 'F');
+          
+          // Draw text
+          doc.setTextColor(0, 0, 0);
+          doc.setFontSize(9);
+          doc.text(`${status}: ${count} (${percentage}%)`, 152, legendY + 1);
+          
+          legendY += 10;
+        }
+      });
+
+      yPosition = Math.max(centerY + radius + 20, legendY + 10);
+    } else {
+      doc.setTextColor(128, 128, 128);
       doc.setFontSize(10);
-      doc.text(`${status}: ${count}`, 20, barY + 2);
-      
-      barY += 12;
-    });
-
-    yPosition = barY + 10;
+      doc.text('No tasks available for chart', 20, yPosition + 20);
+      yPosition += 40;
+    }
 
     // Project Tasks Section
     if (options.includeProjectTasks && projectTasks.length > 0) {
