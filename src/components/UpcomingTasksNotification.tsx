@@ -364,6 +364,7 @@ interface TimelineViewProps {
 
 const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   const [weekOffset, setWeekOffset] = useState(0);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const today = startOfDay(new Date());
   
   // Create date columns based on week offset
@@ -442,6 +443,11 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
           const isToday = startOfDay(date).getTime() === today.getTime();
           const tasksForDate = tasksByDate[dateKey] || [];
           const isPast = date < today;
+          const isSelected = selectedDate === dateKey;
+          
+          const handleDoubleClick = () => {
+            setSelectedDate(isSelected ? null : dateKey);
+          };
           
           return (
             <div
@@ -452,9 +458,12 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
             >
               {/* Calendar Day Box */}
               <div
+                onDoubleClick={handleDoubleClick}
                 className={`
-                  aspect-square rounded-lg border-2 p-2 transition-all
-                  ${isToday 
+                  aspect-square rounded-lg border-2 p-2 transition-all cursor-pointer
+                  ${isSelected
+                    ? 'border-accent bg-accent/20 shadow-lg ring-2 ring-accent/50'
+                    : isToday 
                     ? 'border-primary bg-primary/10 shadow-lg' 
                     : isPast 
                     ? 'border-border/50 bg-muted/30' 
@@ -519,9 +528,11 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
                 </div>
               </div>
 
-              {/* Detailed Hover Tooltip */}
+              {/* Detailed Hover/Selected Tooltip */}
               {tasksForDate.length > 0 && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 hidden group-hover:block z-50 pointer-events-none">
+                <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 ${
+                  isSelected ? 'block' : 'hidden group-hover:block pointer-events-none'
+                }`}>
                   <div className="bg-popover border-2 border-border rounded-lg shadow-elevated p-4 min-w-[280px] max-w-[320px]">
                     {/* Date Header */}
                     <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
