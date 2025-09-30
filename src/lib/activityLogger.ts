@@ -1,5 +1,6 @@
 import { TaskStatus } from '@/types';
 import { v4 as uuid } from 'uuid';
+import { analyticsService, AnalyticsSnapshot } from './analyticsService';
 
 export interface ActivityLogEntry {
   id: string;
@@ -15,9 +16,19 @@ export interface ActivityLogEntry {
   };
 }
 
+export interface TaskCompletionEvent {
+  taskId: string;
+  taskName: string;
+  taskType: 'project' | 'adhoc';
+  completedAt: string;
+  daysToComplete: number;
+}
+
 class ActivityLogger {
   private readonly STORAGE_KEY = 'tracker_activity_log';
+  private readonly COMPLETIONS_KEY = 'tracker_task_completions';
   private readonly MAX_ENTRIES = 1000; // Keep last 1000 entries
+  private readonly MAX_COMPLETIONS = 500; // Keep last 500 completions
 
   // Get all activity logs
   getActivityLog(): ActivityLogEntry[] {
@@ -70,6 +81,51 @@ class ActivityLogger {
         newValue: newStatus
       }
     });
+
+    // Track task completions separately for analytics
+    if (newStatus === 'Complete' && oldStatus !== 'Complete') {
+      this.trackTaskCompletion(taskId, taskName, taskType);
+    }
+  }
+
+  // Track task completion for analytics
+  private trackTaskCompletion(taskId: string, taskName: string, taskType: 'project' | 'adhoc'): void {
+    try {
+      const completions = this.getTaskCompletions();
+      
+      const completion: TaskCompletionEvent = {
+        taskId,
+        taskName,
+        taskType,
+        completedAt: new Date().toISOString(),
+        daysToComplete: 0 // Will be calculated from task data
+      };
+
+      completions.unshift(completion);
+
+      // Keep only recent completions
+      if (completions.length > this.MAX_COMPLETIONS) {
+        completions.splice(this.MAX_COMPLETIONS);
+      }
+
+      localStorage.setItem(this.COMPLETIONS_KEY, JSON.stringify(completions));
+    } catch (error) {
+      console.error('Error tracking task completion:', error);
+    }
+  }
+
+  // Get task completions history
+  getTaskCompletions(): TaskCompletionEvent[] {
+    try {
+      const stored = localStorage.getItem(this.COMPLETIONS_KEY);
+      if (!stored) return [];
+      
+      const completions = JSON.parse(stored);
+      return Array.isArray(completions) ? completions : [];
+    } catch (error) {
+      console.error('Error reading task completions:', error);
+      return [];
+    }
   }
 
   // Log task creation
@@ -135,6 +191,7 @@ class ActivityLogger {
   clearActivityLog(): void {
     try {
       localStorage.removeItem(this.STORAGE_KEY);
+      localStorage.removeItem(this.COMPLETIONS_KEY);
     } catch (error) {
       console.error('Error clearing activity log:', error);
     }
