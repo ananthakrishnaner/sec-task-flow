@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Calendar, Clock, AlertTriangle, Bell, ChevronDown, ChevronUp, Target, User, Zap, Filter, LayoutList, CalendarRange, ChevronLeft, ChevronRight } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, differenceInDays, isToday, isTomorrow, addDays, startOfDay } from "date-fns";
@@ -365,6 +366,8 @@ interface TimelineViewProps {
 const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(new Date());
+  const [showCalendarPicker, setShowCalendarPicker] = useState(false);
   const today = startOfDay(new Date());
   
   // Create date columns based on week offset
@@ -377,7 +380,7 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
     return dates;
   }, [weekOffset]);
 
-  const canGoBack = weekOffset < 0;
+  const canGoBack = weekOffset > -4; // Allow going back up to 8 weeks in past
   const canGoForward = true; // Can always go forward to future dates
 
   // Group tasks by due date
@@ -398,9 +401,9 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
   }, [tasks]);
 
   return (
-    <div className="w-full">
-      {/* Navigation Header */}
-      <div className="flex items-center justify-between mb-4">
+    <div className="w-full space-y-4">
+      {/* Navigation Header with Calendar Picker */}
+      <div className="flex items-center justify-between gap-4">
         <Button
           variant="outline"
           size="sm"
@@ -412,16 +415,40 @@ const TimelineView = ({ tasks, getTaskUrgency }: TimelineViewProps) => {
           Previous
         </Button>
         
-        <div className="text-sm font-medium text-foreground">
-          {weekOffset === 0 ? (
-            <span className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-primary" />
-              This Week & Next
-            </span>
-          ) : weekOffset > 0 ? (
-            `${format(dateColumns[0], 'MMM d')} - ${format(dateColumns[dateColumns.length - 1], 'MMM d, yyyy')}`
-          ) : (
-            `${format(dateColumns[0], 'MMM d')} - ${format(dateColumns[dateColumns.length - 1], 'MMM d, yyyy')}`
+        <div className="flex flex-col items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowCalendarPicker(!showCalendarPicker)}
+            className="text-sm font-medium text-foreground hover:bg-accent"
+          >
+            <Calendar className="h-4 w-4 text-primary mr-2" />
+            {weekOffset === 0 ? (
+              "This Week & Next"
+            ) : (
+              `${format(dateColumns[0], 'MMM d')} - ${format(dateColumns[dateColumns.length - 1], 'MMM d, yyyy')}`
+            )}
+          </Button>
+          
+          {/* Calendar Picker Dropdown */}
+          {showCalendarPicker && (
+            <div className="absolute top-20 z-50 bg-popover border-2 border-border rounded-lg shadow-elevated p-4">
+              <CalendarComponent
+                mode="single"
+                selected={calendarDate}
+                onSelect={(date) => {
+                  if (date) {
+                    setCalendarDate(date);
+                    // Calculate week offset based on selected date
+                    const daysDiff = differenceInDays(startOfDay(date), today);
+                    const newOffset = Math.floor(daysDiff / 14);
+                    setWeekOffset(newOffset);
+                    setShowCalendarPicker(false);
+                  }
+                }}
+                className="rounded-md"
+              />
+            </div>
           )}
         </div>
         
