@@ -11,6 +11,28 @@ export interface ExportOptions {
   dateRangeInfo?: string;
 }
 
+// Helper function to sort tasks by status and date
+const sortTasksByStatusAndDate = <T extends ProjectTask | AdHocTask>(tasks: T[]): T[] => {
+  const statusPriority: Record<string, number> = {
+    'To Do': 1,
+    'In Progress': 2,
+    'Testing': 3,
+    'Blocked': 4,
+    'Complete': 5
+  };
+
+  return [...tasks].sort((a, b) => {
+    // First sort by status priority
+    const statusDiff = (statusPriority[a.status] || 999) - (statusPriority[b.status] || 999);
+    if (statusDiff !== 0) return statusDiff;
+
+    // Then sort by date (deployment date for project tasks, due date for ad-hoc)
+    const dateA = new Date('deploymentDate' in a ? a.deploymentDate : a.dueDate).getTime();
+    const dateB = new Date('deploymentDate' in b ? b.deploymentDate : b.dueDate).getTime();
+    return dateA - dateB;
+  });
+};
+
 export const exportService = {
   // Enhanced Excel export with improved design and formatting
   exportToExcel: (
@@ -20,6 +42,10 @@ export const exportService = {
     options: ExportOptions
   ): void => {
     const workbook = XLSX.utils.book_new();
+
+    // Sort tasks by status and deployment/due date
+    const sortedProjectTasks = sortTasksByStatusAndDate(projectTasks);
+    const sortedAdHocTasks = sortTasksByStatusAndDate(adHocTasks);
 
     // Executive Summary Sheet with enhanced styling
     if (options.includeMetrics) {
@@ -65,10 +91,10 @@ export const exportService = {
     }
 
     // Project Tasks Sheet
-    if (options.includeProjectTasks && projectTasks.length > 0) {
+    if (options.includeProjectTasks && sortedProjectTasks.length > 0) {
       const projectData = [
         ['Task Name', 'Description', 'Squad', 'SPOC', 'Start Date', 'Due Date', 'Status', 'Security Sign-off', 'Priority', 'Created', 'Updated'],
-        ...projectTasks.map(task => [
+        ...sortedProjectTasks.map(task => [
           task.taskName,
           task.description,
           task.squadName,
@@ -104,10 +130,10 @@ export const exportService = {
     }
 
     // Ad-Hoc Tasks Sheet
-    if (options.includeAdHocTasks && adHocTasks.length > 0) {
+    if (options.includeAdHocTasks && sortedAdHocTasks.length > 0) {
       const adHocData = [
         ['Task Name', 'Description', 'Due Date', 'Status', 'Created', 'Updated'],
-        ...adHocTasks.map(task => [
+        ...sortedAdHocTasks.map(task => [
           task.taskName,
           task.description,
           new Date(task.dueDate).toLocaleDateString(),
@@ -173,7 +199,7 @@ export const exportService = {
         }
       }
       
-      projectTasks.forEach(task => {
+      sortedProjectTasks.forEach(task => {
         task.dailyLogs.forEach(log => {
           const logDate = new Date(log.date);
           
@@ -224,6 +250,10 @@ export const exportService = {
     metrics: TaskMetrics, 
     options: ExportOptions
   ): void => {
+    // Sort tasks by status and deployment/due date
+    const sortedProjectTasks = sortTasksByStatusAndDate(projectTasks);
+    const sortedAdHocTasks = sortTasksByStatusAndDate(adHocTasks);
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -365,7 +395,7 @@ export const exportService = {
     }
 
     // Project Tasks Section
-    if (options.includeProjectTasks && projectTasks.length > 0) {
+    if (options.includeProjectTasks && sortedProjectTasks.length > 0) {
       // Check if we need a new page
       if (yPosition > pageHeight - 60) {
         doc.addPage();
@@ -377,7 +407,7 @@ export const exportService = {
       doc.text('Project Tasks', 20, yPosition);
       yPosition += 10;
 
-      const projectTasksData = projectTasks.map(task => [
+      const projectTasksData = sortedProjectTasks.map(task => [
         task.taskName,
         task.squadName,
         task.spoc,
@@ -415,7 +445,7 @@ export const exportService = {
     }
 
     // Ad-Hoc Tasks Section
-    if (options.includeAdHocTasks && adHocTasks.length > 0) {
+    if (options.includeAdHocTasks && sortedAdHocTasks.length > 0) {
       // Check if we need a new page
       if (yPosition > pageHeight - 60) {
         doc.addPage();
@@ -427,7 +457,7 @@ export const exportService = {
       doc.text('Ad-Hoc Tasks', 20, yPosition);
       yPosition += 10;
 
-      const adHocTasksData = adHocTasks.map(task => [
+      const adHocTasksData = sortedAdHocTasks.map(task => [
         task.taskName,
         task.description.substring(0, 50) + (task.description.length > 50 ? '...' : ''),
         task.status,
@@ -501,7 +531,7 @@ export const exportService = {
         }
       }
       
-      projectTasks.forEach(task => {
+      sortedProjectTasks.forEach(task => {
         task.dailyLogs.forEach(log => {
           const logDate = new Date(log.date);
           
@@ -577,9 +607,13 @@ export const exportService = {
   },
 
   exportToCSV: (projectTasks: ProjectTask[], adHocTasks: AdHocTask[]): void => {
+    // Sort tasks by status and deployment/due date
+    const sortedProjectTasks = sortTasksByStatusAndDate(projectTasks);
+    const sortedAdHocTasks = sortTasksByStatusAndDate(adHocTasks);
+
     const allData = [
       ['Type', 'Task Name', 'Description', 'Status', 'Due Date', 'Squad', 'SPOC', 'Security Sign-off', 'Created', 'Updated'],
-      ...projectTasks.map(task => [
+      ...sortedProjectTasks.map(task => [
         'Project',
         task.taskName,
         task.description,
@@ -591,7 +625,7 @@ export const exportService = {
         new Date(task.createdAt).toLocaleDateString(),
         new Date(task.updatedAt).toLocaleDateString()
       ]),
-      ...adHocTasks.map(task => [
+      ...sortedAdHocTasks.map(task => [
         'Ad-Hoc',
         task.taskName,
         task.description,
