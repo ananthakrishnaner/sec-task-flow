@@ -311,7 +311,10 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
         ...exportOptions,
         includeProjectTasks: exportOptions.includeProjectTasks && filteredProjectTasks.length > 0,
         includeAdHocTasks: exportOptions.includeAdHocTasks && filteredAdHocTasks.length > 0,
-        dateRangeInfo: generateDateRangeInfo()
+        dateRangeInfo: generateDateRangeInfo(),
+        filterStartDate: filter.timeframe === 'custom' && filter.startDate ? filter.startDate : undefined,
+        filterEndDate: filter.timeframe === 'custom' && filter.endDate ? filter.endDate : undefined,
+        filterTimeframe: filter.timeframe
       });
 
       setShowExportDialog(false);
@@ -409,7 +412,10 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
         ...exportOptions,
         includeProjectTasks: exportOptions.includeProjectTasks && filteredProjectTasks.length > 0,
         includeAdHocTasks: exportOptions.includeAdHocTasks && filteredAdHocTasks.length > 0,
-        dateRangeInfo: generateDateRangeInfo()
+        dateRangeInfo: generateDateRangeInfo(),
+        filterStartDate: filter.timeframe === 'custom' && filter.startDate ? filter.startDate : undefined,
+        filterEndDate: filter.timeframe === 'custom' && filter.endDate ? filter.endDate : undefined,
+        filterTimeframe: filter.timeframe
       });
 
       setShowExportDialog(false);

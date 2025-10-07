@@ -9,6 +9,9 @@ export interface ExportOptions {
   includeDailyLogs: boolean;
   includeMetrics: boolean;
   dateRangeInfo?: string;
+  filterStartDate?: string;
+  filterEndDate?: string;
+  filterTimeframe?: 'all' | 'this-week' | 'last-week' | 'this-month' | 'custom';
 }
 
 // Helper function to sort tasks by status and date
@@ -162,37 +165,45 @@ export const exportService = {
     if (options.includeDailyLogs) {
       const logsData = [['Task Name', 'Date', 'Status', 'Notes', 'Created']];
       
-      // Parse date range from options.dateRangeInfo
+      // Calculate date range based on filter
+      const now = new Date();
       let startDate: Date | null = null;
       let endDate: Date | null = null;
-      
-      if (options.dateRangeInfo) {
-        const rangeInfo = options.dateRangeInfo.toLowerCase();
-        const now = new Date();
-        
-        if (rangeInfo.includes('week')) {
-          const startOfWeek = new Date(now);
-          startOfWeek.setDate(now.getDate() - now.getDay());
-          startOfWeek.setHours(0, 0, 0, 0);
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          endOfWeek.setHours(23, 59, 59, 999);
-          startDate = startOfWeek;
-          endDate = endOfWeek;
-        } else if (rangeInfo.includes('month')) {
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          endOfMonth.setHours(23, 59, 59, 999);
-          startDate = startOfMonth;
-          endDate = endOfMonth;
-        } else if (rangeInfo.includes(' - ')) {
-          const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
-          const dates = rangeInfo.match(datePattern);
-          if (dates && dates.length >= 2) {
-            startDate = new Date(dates[0]);
-            endDate = new Date(dates[1]);
+
+      if (options.filterTimeframe) {
+        switch (options.filterTimeframe) {
+          case 'this-week':
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            startDate = weekStart;
+            endDate = weekEnd;
+            break;
+          case 'last-week':
+            const lastWeekStart = new Date(now);
+            lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+            lastWeekStart.setHours(0, 0, 0, 0);
+            const lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+            lastWeekEnd.setHours(23, 59, 59, 999);
+            startDate = lastWeekStart;
+            endDate = lastWeekEnd;
+            break;
+          case 'this-month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             endDate.setHours(23, 59, 59, 999);
-          }
+            break;
+          case 'custom':
+            if (options.filterStartDate && options.filterEndDate) {
+              startDate = new Date(options.filterStartDate);
+              endDate = new Date(options.filterEndDate);
+              endDate.setHours(23, 59, 59, 999);
+            }
+            break;
         }
       }
       
@@ -532,37 +543,45 @@ export const exportService = {
 
     // Daily Logs Section
     if (options.includeDailyLogs) {
-      // Parse date range from options.dateRangeInfo
+      // Calculate date range based on filter
+      const now = new Date();
       let startDate: Date | null = null;
       let endDate: Date | null = null;
-      
-      if (options.dateRangeInfo) {
-        const rangeInfo = options.dateRangeInfo.toLowerCase();
-        const now = new Date();
-        
-        if (rangeInfo.includes('week')) {
-          const startOfWeek = new Date(now);
-          startOfWeek.setDate(now.getDate() - now.getDay());
-          startOfWeek.setHours(0, 0, 0, 0);
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6);
-          endOfWeek.setHours(23, 59, 59, 999);
-          startDate = startOfWeek;
-          endDate = endOfWeek;
-        } else if (rangeInfo.includes('month')) {
-          const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-          endOfMonth.setHours(23, 59, 59, 999);
-          startDate = startOfMonth;
-          endDate = endOfMonth;
-        } else if (rangeInfo.includes(' - ')) {
-          const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
-          const dates = rangeInfo.match(datePattern);
-          if (dates && dates.length >= 2) {
-            startDate = new Date(dates[0]);
-            endDate = new Date(dates[1]);
+
+      if (options.filterTimeframe) {
+        switch (options.filterTimeframe) {
+          case 'this-week':
+            const weekStart = new Date(now);
+            weekStart.setDate(now.getDate() - now.getDay());
+            weekStart.setHours(0, 0, 0, 0);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekStart.getDate() + 6);
+            weekEnd.setHours(23, 59, 59, 999);
+            startDate = weekStart;
+            endDate = weekEnd;
+            break;
+          case 'last-week':
+            const lastWeekStart = new Date(now);
+            lastWeekStart.setDate(now.getDate() - now.getDay() - 7);
+            lastWeekStart.setHours(0, 0, 0, 0);
+            const lastWeekEnd = new Date(lastWeekStart);
+            lastWeekEnd.setDate(lastWeekStart.getDate() + 6);
+            lastWeekEnd.setHours(23, 59, 59, 999);
+            startDate = lastWeekStart;
+            endDate = lastWeekEnd;
+            break;
+          case 'this-month':
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
             endDate.setHours(23, 59, 59, 999);
-          }
+            break;
+          case 'custom':
+            if (options.filterStartDate && options.filterEndDate) {
+              startDate = new Date(options.filterStartDate);
+              endDate = new Date(options.filterEndDate);
+              endDate.setHours(23, 59, 59, 999);
+            }
+            break;
         }
       }
       
