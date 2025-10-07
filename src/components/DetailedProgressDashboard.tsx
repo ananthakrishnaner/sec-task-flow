@@ -563,8 +563,15 @@ export const DetailedProgressDashboard = ({ projectTasks, adHocTasks }: Detailed
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Results</label>
-              <div className="text-lg font-bold text-foreground bg-gradient-primary/10 px-4 py-2 rounded-md border border-primary/20">
-                {filteredTasks.length} tasks
+              <div className="flex gap-3">
+                <div className="flex-1 text-base font-bold text-foreground bg-gradient-primary/10 px-4 py-2 rounded-md border border-primary/20">
+                  <div className="text-xs text-muted-foreground mb-1">Project</div>
+                  {filteredTasks.filter(task => 'squadName' in task).length}
+                </div>
+                <div className="flex-1 text-base font-bold text-foreground bg-accent/10 px-4 py-2 rounded-md border border-accent/20">
+                  <div className="text-xs text-muted-foreground mb-1">Ad-Hoc</div>
+                  {filteredTasks.filter(task => !('squadName' in task)).length}
+                </div>
               </div>
             </div>
           </div>
