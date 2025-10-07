@@ -171,7 +171,6 @@ export const exportService = {
         const now = new Date();
         
         if (rangeInfo.includes('week')) {
-          // Current week or specific week
           const startOfWeek = new Date(now);
           startOfWeek.setDate(now.getDate() - now.getDay());
           startOfWeek.setHours(0, 0, 0, 0);
@@ -181,14 +180,12 @@ export const exportService = {
           startDate = startOfWeek;
           endDate = endOfWeek;
         } else if (rangeInfo.includes('month')) {
-          // Current month or specific month
           const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
           endOfMonth.setHours(23, 59, 59, 999);
           startDate = startOfMonth;
           endDate = endOfMonth;
         } else if (rangeInfo.includes(' - ')) {
-          // Custom date range parsing
           const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
           const dates = rangeInfo.match(datePattern);
           if (dates && dates.length >= 2) {
@@ -199,24 +196,61 @@ export const exportService = {
         }
       }
       
+      // Collect all logs with task info
+      const allLogsWithTask: Array<{
+        taskName: string;
+        taskStartDate: Date;
+        logDate: Date;
+        status: string;
+        notes: string;
+        createdAt: Date;
+      }> = [];
+      
       sortedProjectTasks.forEach(task => {
-        task.dailyLogs.forEach(log => {
-          const logDate = new Date(log.date);
-          
-          // Filter logs based on date range
-          const isInRange = !startDate || !endDate || 
-            (logDate >= startDate && logDate <= endDate);
-          
-          if (isInRange) {
-            logsData.push([
-              task.taskName,
-              new Date(log.date).toLocaleDateString(),
-              log.status,
-              log.notes,
-              new Date(log.createdAt).toLocaleDateString()
-            ]);
-          }
-        });
+        const taskStartDate = new Date(task.startDate);
+        
+        // Filter tasks based on start date being within range
+        const taskInRange = !startDate || !endDate || 
+          (taskStartDate >= startDate && taskStartDate <= endDate);
+        
+        if (taskInRange) {
+          task.dailyLogs.forEach(log => {
+            allLogsWithTask.push({
+              taskName: task.taskName,
+              taskStartDate,
+              logDate: new Date(log.date),
+              status: log.status,
+              notes: log.notes,
+              createdAt: new Date(log.createdAt)
+            });
+          });
+        }
+      });
+      
+      // Sort logs by status priority, then by date
+      const statusPriority: Record<string, number> = {
+        'To Do': 1,
+        'In Progress': 2,
+        'Testing': 3,
+        'Blocked': 4,
+        'Complete': 5
+      };
+      
+      allLogsWithTask.sort((a, b) => {
+        const statusDiff = (statusPriority[a.status] || 999) - (statusPriority[b.status] || 999);
+        if (statusDiff !== 0) return statusDiff;
+        return a.logDate.getTime() - b.logDate.getTime();
+      });
+      
+      // Add sorted logs to data
+      allLogsWithTask.forEach(log => {
+        logsData.push([
+          log.taskName,
+          log.logDate.toLocaleDateString(),
+          log.status,
+          log.notes,
+          log.createdAt.toLocaleDateString()
+        ]);
       });
 
       if (logsData.length > 1) {
@@ -492,8 +526,6 @@ export const exportService = {
 
     // Daily Logs Section
     if (options.includeDailyLogs) {
-      const allLogs: any[] = [];
-      
       // Parse date range from options.dateRangeInfo
       let startDate: Date | null = null;
       let endDate: Date | null = null;
@@ -503,7 +535,6 @@ export const exportService = {
         const now = new Date();
         
         if (rangeInfo.includes('week')) {
-          // Current week or specific week
           const startOfWeek = new Date(now);
           startOfWeek.setDate(now.getDate() - now.getDay());
           startOfWeek.setHours(0, 0, 0, 0);
@@ -513,14 +544,12 @@ export const exportService = {
           startDate = startOfWeek;
           endDate = endOfWeek;
         } else if (rangeInfo.includes('month')) {
-          // Current month or specific month
           const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
           endOfMonth.setHours(23, 59, 59, 999);
           startDate = startOfMonth;
           endDate = endOfMonth;
         } else if (rangeInfo.includes(' - ')) {
-          // Custom date range parsing
           const datePattern = /(\w{3,4} \d{1,2}, \d{4})/g;
           const dates = rangeInfo.match(datePattern);
           if (dates && dates.length >= 2) {
@@ -531,24 +560,57 @@ export const exportService = {
         }
       }
       
+      // Collect all logs with task info
+      const allLogsWithTask: Array<{
+        taskName: string;
+        taskStartDate: Date;
+        logDate: Date;
+        status: string;
+        notes: string;
+      }> = [];
+      
       sortedProjectTasks.forEach(task => {
-        task.dailyLogs.forEach(log => {
-          const logDate = new Date(log.date);
-          
-          // Filter logs based on date range
-          const isInRange = !startDate || !endDate || 
-            (logDate >= startDate && logDate <= endDate);
-          
-          if (isInRange) {
-            allLogs.push([
-              task.taskName,
-              new Date(log.date).toLocaleDateString(),
-              log.status,
-              log.notes.substring(0, 80) + (log.notes.length > 80 ? '...' : '')
-            ]);
-          }
-        });
+        const taskStartDate = new Date(task.startDate);
+        
+        // Filter tasks based on start date being within range
+        const taskInRange = !startDate || !endDate || 
+          (taskStartDate >= startDate && taskStartDate <= endDate);
+        
+        if (taskInRange) {
+          task.dailyLogs.forEach(log => {
+            allLogsWithTask.push({
+              taskName: task.taskName,
+              taskStartDate,
+              logDate: new Date(log.date),
+              status: log.status,
+              notes: log.notes
+            });
+          });
+        }
       });
+      
+      // Sort logs by status priority, then by date
+      const statusPriority: Record<string, number> = {
+        'To Do': 1,
+        'In Progress': 2,
+        'Testing': 3,
+        'Blocked': 4,
+        'Complete': 5
+      };
+      
+      allLogsWithTask.sort((a, b) => {
+        const statusDiff = (statusPriority[a.status] || 999) - (statusPriority[b.status] || 999);
+        if (statusDiff !== 0) return statusDiff;
+        return a.logDate.getTime() - b.logDate.getTime();
+      });
+      
+      // Convert to display format
+      const allLogs = allLogsWithTask.map(log => [
+        log.taskName,
+        log.logDate.toLocaleDateString(),
+        log.status,
+        log.notes.substring(0, 80) + (log.notes.length > 80 ? '...' : '')
+      ]);
 
       if (allLogs.length > 0) {
         // Check if we need a new page
