@@ -472,7 +472,10 @@ export const exportService = {
           5: { cellWidth: 22 },
           6: { cellWidth: 20 }
         },
-        margin: { left: 20, right: 20 }
+        margin: { left: 20, right: 20 },
+        showHead: 'everyPage',
+        pageBreak: 'auto',
+        rowPageBreak: 'avoid'
       });
 
       yPosition = (doc as any).lastAutoTable.finalY + 15;
@@ -518,7 +521,10 @@ export const exportService = {
           3: { cellWidth: 25 },
           4: { cellWidth: 25 }
         },
-        margin: { left: 20, right: 20 }
+        margin: { left: 20, right: 20 },
+        showHead: 'everyPage',
+        pageBreak: 'auto',
+        rowPageBreak: 'avoid'
       });
 
       yPosition = (doc as any).lastAutoTable.finalY + 15;
@@ -642,7 +648,10 @@ export const exportService = {
             2: { cellWidth: 25 },
             3: { cellWidth: 85 }
           },
-          margin: { left: 20, right: 20 }
+          margin: { left: 20, right: 20 },
+          showHead: 'everyPage',
+          pageBreak: 'auto',
+          rowPageBreak: 'avoid'
         });
       }
     }
