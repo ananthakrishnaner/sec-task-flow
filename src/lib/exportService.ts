@@ -169,8 +169,10 @@ export const exportService = {
       const now = new Date();
       let startDate: Date | null = null;
       let endDate: Date | null = null;
+      let shouldFilterByDate = false;
 
-      if (options.filterTimeframe) {
+      if (options.filterTimeframe && options.filterTimeframe !== 'all') {
+        shouldFilterByDate = true;
         switch (options.filterTimeframe) {
           case 'this-week':
             const weekStart = new Date(now);
@@ -220,9 +222,9 @@ export const exportService = {
       sortedProjectTasks.forEach(task => {
         const taskStartDate = new Date(task.startDate);
         
-        // Filter tasks based on start date being within range
-        const taskInRange = !startDate || !endDate || 
-          (taskStartDate >= startDate && taskStartDate <= endDate);
+        // Filter tasks based on start date being within range (only if filtering is enabled)
+        const taskInRange = !shouldFilterByDate || 
+          (startDate && endDate && taskStartDate >= startDate && taskStartDate <= endDate);
         
         if (taskInRange) {
           task.dailyLogs.forEach(log => {
@@ -547,8 +549,10 @@ export const exportService = {
       const now = new Date();
       let startDate: Date | null = null;
       let endDate: Date | null = null;
+      let shouldFilterByDate = false;
 
-      if (options.filterTimeframe) {
+      if (options.filterTimeframe && options.filterTimeframe !== 'all') {
+        shouldFilterByDate = true;
         switch (options.filterTimeframe) {
           case 'this-week':
             const weekStart = new Date(now);
@@ -597,9 +601,9 @@ export const exportService = {
       sortedProjectTasks.forEach(task => {
         const taskStartDate = new Date(task.startDate);
         
-        // Filter tasks based on start date being within range
-        const taskInRange = !startDate || !endDate || 
-          (taskStartDate >= startDate && taskStartDate <= endDate);
+        // Filter tasks based on start date being within range (only if filtering is enabled)
+        const taskInRange = !shouldFilterByDate || 
+          (startDate && endDate && taskStartDate >= startDate && taskStartDate <= endDate);
         
         if (taskInRange) {
           task.dailyLogs.forEach(log => {
