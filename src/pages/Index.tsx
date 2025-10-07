@@ -13,6 +13,7 @@ import { AdHocTasksList } from "@/components/AdHocTasksList";
 import { UpcomingTasksNotification } from "@/components/UpcomingTasksNotification";
 import { DetailedProgressDashboard } from "@/components/DetailedProgressDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
+import { CompletedTasksSection } from "@/components/CompletedTasksSection";
 import { Settings } from "@/pages/Settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -550,7 +551,7 @@ const Index = () => {
         {/* Task Management Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <TabsList className="bg-card border border-border grid grid-cols-3 lg:grid-cols-6 w-full lg:w-auto">
+            <TabsList className="bg-card border border-border grid grid-cols-4 lg:grid-cols-7 w-full lg:w-auto">
               <TabsTrigger value="project" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Project Tasks</span>
                 <span className="sm:hidden">Projects</span>
@@ -562,6 +563,10 @@ const Index = () => {
               <TabsTrigger value="adhoc" className="data-[state=active]:bg-accent data-[state=active]:text-accent-foreground text-xs sm:text-sm">
                 <span className="hidden sm:inline">Ad-Hoc Tasks</span>
                 <span className="sm:hidden">Ad-Hoc</span>
+              </TabsTrigger>
+              <TabsTrigger value="completed" className="data-[state=active]:bg-success data-[state=active]:text-success-foreground text-xs sm:text-sm">
+                <span className="hidden sm:inline">Completed</span>
+                <span className="sm:hidden">Done</span>
               </TabsTrigger>
               <TabsTrigger value="upcoming" className="data-[state=active]:bg-warning data-[state=active]:text-warning-foreground text-xs sm:text-sm">
                 <Bell className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -664,6 +669,13 @@ const Index = () => {
             <AdHocTasksList 
               tasks={adHocTasks}
               onUpdateTasks={handleUpdateAdHocTasks}
+            />
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-6">
+            <CompletedTasksSection 
+              projectTasks={projectTasks}
+              adHocTasks={adHocTasks}
             />
           </TabsContent>
 
