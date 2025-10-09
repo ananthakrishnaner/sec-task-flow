@@ -86,8 +86,8 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible, existin
 
   const acceptSuggestion = () => {
     if (suggestedSquad) {
+      setSuggestedSquad(null); // Hide suggestion first
       setFormData(prev => ({ ...prev, squadName: suggestedSquad }));
-      setSuggestedSquad(null);
     }
   };
 

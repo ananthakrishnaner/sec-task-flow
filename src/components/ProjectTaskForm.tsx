@@ -75,8 +75,8 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel, existingTasks }
 
   const acceptSuggestion = () => {
     if (suggestedSquad) {
+      setSuggestedSquad(null); // Hide suggestion first
       setFormData({ ...formData, squadName: suggestedSquad });
-      setSuggestedSquad(null);
     }
   };
 
