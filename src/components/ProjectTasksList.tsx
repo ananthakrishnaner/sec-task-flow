@@ -41,11 +41,12 @@ interface SortableTaskItemProps {
   task: ProjectTask;
   onUpdateTask: (task: ProjectTask) => void;
   onDeleteTask: (taskId: string) => void;
+  allTasks: ProjectTask[];
 }
 
 const statusOptions: TaskStatus[] = ["To Do", "In Progress", "Blocked", "Testing", "Complete"];
 
-const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItemProps) => {
+const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask, allTasks }: SortableTaskItemProps) => {
   const [showDailyLog, setShowDailyLog] = useState(false);
   const [dailyLogNote, setDailyLogNote] = useState("");
   const [selectedLogStatus, setSelectedLogStatus] = useState<TaskStatus>(task.status);
@@ -217,6 +218,7 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask }: SortableTaskItem
         onSave={handleEditTask}
         onCancel={() => setIsEditing(false)}
         isVisible={isEditing}
+        existingTasks={allTasks}
       />
 
       {!isEditing && (
@@ -441,6 +443,7 @@ export const ProjectTasksList = ({ tasks, onUpdateTasks }: ProjectTasksListProps
               task={task}
               onUpdateTask={handleUpdateTask}
               onDeleteTask={handleDeleteTask}
+              allTasks={tasks}
             />
           ))}
         </SortableContext>

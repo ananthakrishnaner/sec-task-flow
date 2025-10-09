@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,20 +8,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
+import { CalendarIcon, Plus, AlertCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ProjectTask, TaskStatus } from "@/types";
 import { cn } from "@/lib/utils";
+import { findSimilarSquad, getExistingSquadNames } from "@/lib/squadSuggestions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ProjectTaskFormProps {
   onSubmit: (task: Omit<ProjectTask, 'id' | 'priority' | 'dailyLogs' | 'createdAt' | 'updatedAt'>) => void;
   isVisible: boolean;
   onCancel: () => void;
+  existingTasks: ProjectTask[];
 }
 
 const statusOptions: TaskStatus[] = ["To Do", "In Progress", "Blocked", "Testing", "Complete"];
 
-export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFormProps) => {
+export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel, existingTasks }: ProjectTaskFormProps) => {
   const [formData, setFormData] = useState({
     taskName: "",
     description: "",
@@ -32,6 +35,18 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
     status: "To Do" as TaskStatus,
     securitySignOff: false,
   });
+  const [suggestedSquad, setSuggestedSquad] = useState<string | null>(null);
+
+  // Check for similar squad names when typing
+  useEffect(() => {
+    if (formData.squadName && formData.squadName.length >= 2) {
+      const existingSquads = getExistingSquadNames(existingTasks);
+      const similar = findSimilarSquad(formData.squadName, existingSquads);
+      setSuggestedSquad(similar);
+    } else {
+      setSuggestedSquad(null);
+    }
+  }, [formData.squadName, existingTasks]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +70,14 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
       status: "To Do",
       securitySignOff: false,
     });
+    setSuggestedSquad(null);
+  };
+
+  const acceptSuggestion = () => {
+    if (suggestedSquad) {
+      setFormData({ ...formData, squadName: suggestedSquad });
+      setSuggestedSquad(null);
+    }
   };
 
   if (!isVisible) return null;
@@ -92,6 +115,25 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel }: ProjectTaskFo
                 required
                 className="bg-input border-border text-foreground"
               />
+              {suggestedSquad && (
+                <Alert className="bg-muted border-primary/50">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-foreground">
+                      Did you mean <strong>"{suggestedSquad}"</strong>?
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={acceptSuggestion}
+                      className="h-7 text-xs"
+                    >
+                      Use this
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
           </div>
 

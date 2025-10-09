@@ -8,18 +8,21 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, AlertCircle } from "lucide-react";
+import { findSimilarSquad, getExistingSquadNames } from "@/lib/squadSuggestions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ProjectTaskEditFormProps {
   task: ProjectTask;
   onSave: (updatedTask: ProjectTask) => void;
   onCancel: () => void;
   isVisible: boolean;
+  existingTasks: ProjectTask[];
 }
 
 const statusOptions: TaskStatus[] = ["To Do", "In Progress", "Blocked", "Testing", "Complete"];
 
-export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: ProjectTaskEditFormProps) => {
+export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible, existingTasks }: ProjectTaskEditFormProps) => {
   const [formData, setFormData] = useState({
     taskName: task.taskName,
     description: task.description,
@@ -30,6 +33,7 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: Proje
     status: task.status,
     securitySignOff: task.securitySignOff,
   });
+  const [suggestedSquad, setSuggestedSquad] = useState<string | null>(null);
 
   // Reset form data when task changes
   useEffect(() => {
@@ -43,7 +47,21 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: Proje
       status: task.status,
       securitySignOff: task.securitySignOff,
     });
+    setSuggestedSquad(null);
   }, [task]);
+
+  // Check for similar squad names when typing
+  useEffect(() => {
+    if (formData.squadName && formData.squadName.length >= 2) {
+      const existingSquads = getExistingSquadNames(existingTasks).filter(
+        squad => squad !== task.squadName // Exclude the original squad name
+      );
+      const similar = findSimilarSquad(formData.squadName, existingSquads);
+      setSuggestedSquad(similar);
+    } else {
+      setSuggestedSquad(null);
+    }
+  }, [formData.squadName, existingTasks, task.squadName]);
 
   if (!isVisible) return null;
 
@@ -64,6 +82,13 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: Proje
       ...prev,
       [field]: value
     }));
+  };
+
+  const acceptSuggestion = () => {
+    if (suggestedSquad) {
+      setFormData(prev => ({ ...prev, squadName: suggestedSquad }));
+      setSuggestedSquad(null);
+    }
   };
 
   return (
@@ -131,6 +156,25 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible }: Proje
                 className="bg-input border-border text-foreground"
                 required
               />
+              {suggestedSquad && (
+                <Alert className="bg-muted border-primary/50">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="flex items-center justify-between gap-2">
+                    <span className="text-sm text-foreground">
+                      Did you mean <strong>"{suggestedSquad}"</strong>?
+                    </span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={acceptSuggestion}
+                      className="h-7 text-xs"
+                    >
+                      Use this
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
             </div>
 
             <div className="space-y-2">

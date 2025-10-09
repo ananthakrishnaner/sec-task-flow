@@ -624,6 +624,7 @@ const Index = () => {
               onSubmit={handleAddProjectTask}
               isVisible={showProjectForm}
               onCancel={() => setShowProjectForm(false)}
+              existingTasks={projectTasks}
             />
             <ProjectTasksList 
               tasks={projectTasks}
