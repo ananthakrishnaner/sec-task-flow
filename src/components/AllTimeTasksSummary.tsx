@@ -19,11 +19,11 @@ export const AllTimeTasksSummary = ({ projectTasks, adHocTasks }: AllTimeTasksSu
 
     const dates = allCompletedTasks.map(task => new Date(task.updatedAt));
     const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
-    const latestDate = new Date(Math.max(...dates.map(d => d.getTime())));
+    const today = new Date();
 
     return {
       from: format(earliestDate, 'MMM dd, yyyy'),
-      to: format(latestDate, 'MMM dd, yyyy')
+      to: format(today, 'MMM dd, yyyy')
     };
   };
 
