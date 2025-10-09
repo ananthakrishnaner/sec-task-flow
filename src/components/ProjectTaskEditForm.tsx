@@ -56,8 +56,18 @@ export const ProjectTaskEditForm = ({ task, onSave, onCancel, isVisible, existin
       const existingSquads = getExistingSquadNames(existingTasks).filter(
         squad => squad !== task.squadName // Exclude the original squad name
       );
-      const similar = findSimilarSquad(formData.squadName, existingSquads);
-      setSuggestedSquad(similar);
+      
+      // Don't show suggestion if exact match exists
+      const exactMatch = existingSquads.some(
+        squad => squad.toLowerCase() === formData.squadName.toLowerCase()
+      );
+      
+      if (!exactMatch) {
+        const similar = findSimilarSquad(formData.squadName, existingSquads);
+        setSuggestedSquad(similar);
+      } else {
+        setSuggestedSquad(null);
+      }
     } else {
       setSuggestedSquad(null);
     }

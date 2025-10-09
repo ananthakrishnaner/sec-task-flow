@@ -41,8 +41,18 @@ export const ProjectTaskForm = ({ onSubmit, isVisible, onCancel, existingTasks }
   useEffect(() => {
     if (formData.squadName && formData.squadName.length >= 2) {
       const existingSquads = getExistingSquadNames(existingTasks);
-      const similar = findSimilarSquad(formData.squadName, existingSquads);
-      setSuggestedSquad(similar);
+      
+      // Don't show suggestion if exact match exists
+      const exactMatch = existingSquads.some(
+        squad => squad.toLowerCase() === formData.squadName.toLowerCase()
+      );
+      
+      if (!exactMatch) {
+        const similar = findSimilarSquad(formData.squadName, existingSquads);
+        setSuggestedSquad(similar);
+      } else {
+        setSuggestedSquad(null);
+      }
     } else {
       setSuggestedSquad(null);
     }
