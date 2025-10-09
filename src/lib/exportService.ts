@@ -12,6 +12,8 @@ export interface ExportOptions {
   filterStartDate?: string;
   filterEndDate?: string;
   filterTimeframe?: 'all' | 'this-week' | 'last-week' | 'this-month' | 'custom';
+  currentPage?: number;
+  itemsPerPage?: number;
 }
 
 // Helper function to sort tasks by status and date
@@ -449,12 +451,23 @@ export const exportService = {
         yPosition = 20;
       }
 
+      // Apply pagination if specified
+      const tasksToExport = options.currentPage && options.itemsPerPage 
+        ? sortedProjectTasks.slice(
+            (options.currentPage - 1) * options.itemsPerPage,
+            options.currentPage * options.itemsPerPage
+          )
+        : sortedProjectTasks;
+
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Project Tasks', 20, yPosition);
+      const pageInfo = options.currentPage && options.itemsPerPage
+        ? ` (Page ${options.currentPage} of ${Math.ceil(sortedProjectTasks.length / options.itemsPerPage)})`
+        : '';
+      doc.text(`Project Tasks${pageInfo}`, 20, yPosition);
       yPosition += 10;
 
-      const projectTasksData = sortedProjectTasks.map(task => [
+      const projectTasksData = tasksToExport.map(task => [
         task.taskName,
         task.squadName,
         task.spoc,
@@ -502,12 +515,23 @@ export const exportService = {
         yPosition = 20;
       }
 
+      // Apply pagination if specified
+      const tasksToExport = options.currentPage && options.itemsPerPage 
+        ? sortedAdHocTasks.slice(
+            (options.currentPage - 1) * options.itemsPerPage,
+            options.currentPage * options.itemsPerPage
+          )
+        : sortedAdHocTasks;
+
       doc.setFontSize(14);
       doc.setFont('helvetica', 'bold');
-      doc.text('Ad-Hoc Tasks', 20, yPosition);
+      const pageInfo = options.currentPage && options.itemsPerPage
+        ? ` (Page ${options.currentPage} of ${Math.ceil(sortedAdHocTasks.length / options.itemsPerPage)})`
+        : '';
+      doc.text(`Ad-Hoc Tasks${pageInfo}`, 20, yPosition);
       yPosition += 10;
 
-      const adHocTasksData = sortedAdHocTasks.map(task => [
+      const adHocTasksData = tasksToExport.map(task => [
         task.taskName,
         task.description.substring(0, 50) + (task.description.length > 50 ? '...' : ''),
         task.status,

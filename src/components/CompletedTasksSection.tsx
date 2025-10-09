@@ -1,16 +1,31 @@
+import { useState } from "react";
 import { ProjectTask, AdHocTask } from "@/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Calendar, User, Clock, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui/pagination";
 
 interface CompletedTasksSectionProps {
   projectTasks: ProjectTask[];
   adHocTasks: AdHocTask[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTasksSectionProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("all");
+  
   const completedProjectTasks = projectTasks.filter(task => task.status === "Complete");
   const completedAdHocTasks = adHocTasks.filter(task => task.status === "Complete");
   const allCompletedTasks = [...completedProjectTasks, ...completedAdHocTasks];
@@ -27,6 +42,77 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
   const sortedAllTasks = [...allCompletedTasks].sort((a, b) => 
     new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
   );
+
+  // Pagination logic
+  const getCurrentPageTasks = (tasks: (ProjectTask | AdHocTask)[]) => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return tasks.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = (tasks: (ProjectTask | AdHocTask)[]) => {
+    return Math.ceil(tasks.length / ITEMS_PER_PAGE);
+  };
+
+  const renderPagination = (tasks: (ProjectTask | AdHocTask)[]) => {
+    const totalPages = getTotalPages(tasks);
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= currentPage - 1 && i <= currentPage + 1)
+      ) {
+        pages.push(i);
+      } else if (i === currentPage - 2 || i === currentPage + 2) {
+        pages.push(-1); // Ellipsis marker
+      }
+    }
+
+    return (
+      <Pagination className="mt-6">
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+              className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+          {pages.map((page, index) => 
+            page === -1 ? (
+              <PaginationItem key={`ellipsis-${index}`}>
+                <PaginationEllipsis />
+              </PaginationItem>
+            ) : (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => setCurrentPage(page)}
+                  isActive={currentPage === page}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            )
+          )}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
+  };
+
+  // Reset to page 1 when switching tabs
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1);
+  };
 
   const calculateDuration = (task: ProjectTask | AdHocTask): number => {
     const startDate = new Date('startDate' in task ? task.startDate : task.createdAt);
@@ -160,7 +246,7 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
               </p>
             </div>
           ) : (
-            <Tabs defaultValue="all" className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-6">
                 <TabsTrigger value="all">
                   All ({allCompletedTasks.length})
@@ -174,14 +260,18 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
               </TabsList>
 
               <TabsContent value="all" className="space-y-4">
-                {sortedAllTasks.map(task => 
+                {getCurrentPageTasks(sortedAllTasks).map(task => 
                   'squadName' in task ? renderProjectTask(task) : renderAdHocTask(task)
                 )}
+                {renderPagination(sortedAllTasks)}
               </TabsContent>
 
               <TabsContent value="project" className="space-y-4">
                 {sortedProjectTasks.length > 0 ? (
-                  sortedProjectTasks.map(renderProjectTask)
+                  <>
+                    {getCurrentPageTasks(sortedProjectTasks).map(renderProjectTask)}
+                    {renderPagination(sortedProjectTasks)}
+                  </>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No completed project tasks</p>
@@ -191,7 +281,10 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
 
               <TabsContent value="adhoc" className="space-y-4">
                 {sortedAdHocTasks.length > 0 ? (
-                  sortedAdHocTasks.map(renderAdHocTask)
+                  <>
+                    {getCurrentPageTasks(sortedAdHocTasks).map(renderAdHocTask)}
+                    {renderPagination(sortedAdHocTasks)}
+                  </>
                 ) : (
                   <div className="text-center py-8">
                     <p className="text-muted-foreground">No completed ad-hoc tasks</p>
