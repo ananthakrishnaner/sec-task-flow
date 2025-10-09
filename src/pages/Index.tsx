@@ -14,6 +14,7 @@ import { UpcomingTasksNotification } from "@/components/UpcomingTasksNotificatio
 import { DetailedProgressDashboard } from "@/components/DetailedProgressDashboard";
 import { AdvancedAnalytics } from "@/components/AdvancedAnalytics";
 import { CompletedTasksSection } from "@/components/CompletedTasksSection";
+import { AllTimeTasksSummary } from "@/components/AllTimeTasksSummary";
 import { Settings } from "@/pages/Settings";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -542,8 +543,15 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-3 py-4 sm:px-6 sm:py-6">
-        {/* Metrics Dashboard */}
-        <DashboardMetrics metrics={metrics} />
+        {/* All-Time Summary and Metrics Dashboard */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+          <div className="lg:col-span-1">
+            <AllTimeTasksSummary projectTasks={projectTasks} adHocTasks={adHocTasks} />
+          </div>
+          <div className="lg:col-span-3">
+            <DashboardMetrics metrics={metrics} />
+          </div>
+        </div>
 
         {/* Charts Section */}
         <TaskChartsSection metrics={metrics} />
