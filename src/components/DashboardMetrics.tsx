@@ -4,9 +4,10 @@ import { Activity, CheckCircle, Clock, AlertTriangle, TrendingUp } from "lucide-
 
 interface DashboardMetricsProps {
   metrics: TaskMetrics;
+  privacyMode?: boolean;
 }
 
-export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
+export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetricsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
       <Card className="bg-card-elevated shadow-card border-border">
@@ -15,10 +16,12 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
           <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
         </CardHeader>
         <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-          <div className="text-xl sm:text-2xl font-bold text-foreground">{metrics.totalTasks}</div>
-          <p className="text-xs text-muted-foreground">
-            {metrics.projectTasksCount} project • {metrics.adHocTasksCount} ad-hoc
-          </p>
+          <div className="text-xl sm:text-2xl font-bold text-foreground">{privacyMode ? '***' : metrics.totalTasks}</div>
+          {!privacyMode && (
+            <p className="text-xs text-muted-foreground">
+              {metrics.projectTasksCount} project • {metrics.adHocTasksCount} ad-hoc
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -28,10 +31,12 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
           <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
         </CardHeader>
         <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-          <div className="text-xl sm:text-2xl font-bold text-success">{metrics.completedTasks}</div>
-          <p className="text-xs text-muted-foreground">
-            {metrics.completionRate.toFixed(1)}% completion rate
-          </p>
+          <div className="text-xl sm:text-2xl font-bold text-success">{privacyMode ? '***' : metrics.completedTasks}</div>
+          {!privacyMode && (
+            <p className="text-xs text-muted-foreground">
+              {metrics.completionRate.toFixed(1)}% completion rate
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -41,10 +46,12 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
           <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
         </CardHeader>
         <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-          <div className="text-xl sm:text-2xl font-bold text-primary">{metrics.inProgressTasks}</div>
-          <p className="text-xs text-muted-foreground">
-            Active work items
-          </p>
+          <div className="text-xl sm:text-2xl font-bold text-primary">{privacyMode ? '***' : metrics.inProgressTasks}</div>
+          {!privacyMode && (
+            <p className="text-xs text-muted-foreground">
+              Active work items
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -54,10 +61,12 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
           <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
         </CardHeader>
         <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-          <div className="text-xl sm:text-2xl font-bold text-destructive">{metrics.blockedTasks}</div>
-          <p className="text-xs text-muted-foreground">
-            Requires attention
-          </p>
+          <div className="text-xl sm:text-2xl font-bold text-destructive">{privacyMode ? '***' : metrics.blockedTasks}</div>
+          {!privacyMode && (
+            <p className="text-xs text-muted-foreground">
+              Requires attention
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -67,10 +76,12 @@ export const DashboardMetrics = ({ metrics }: DashboardMetricsProps) => {
           <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
         </CardHeader>
         <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0">
-          <div className="text-xl sm:text-2xl font-bold text-accent">{metrics.weeklyCompletions.reduce((a, b) => a + b, 0)}</div>
-          <p className="text-xs text-muted-foreground">
-            This week completed
-          </p>
+          <div className="text-xl sm:text-2xl font-bold text-accent">{privacyMode ? '***' : metrics.weeklyCompletions.reduce((a, b) => a + b, 0)}</div>
+          {!privacyMode && (
+            <p className="text-xs text-muted-foreground">
+              This week completed
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

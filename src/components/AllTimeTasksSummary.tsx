@@ -6,9 +6,10 @@ import { format } from "date-fns";
 interface AllTimeTasksSummaryProps {
   projectTasks: ProjectTask[];
   adHocTasks: AdHocTask[];
+  privacyMode?: boolean;
 }
 
-export const AllTimeTasksSummary = ({ projectTasks, adHocTasks }: AllTimeTasksSummaryProps) => {
+export const AllTimeTasksSummary = ({ projectTasks, adHocTasks, privacyMode = false }: AllTimeTasksSummaryProps) => {
   const allCompletedTasks = [
     ...projectTasks.filter(task => task.status === "Complete"),
     ...adHocTasks.filter(task => task.status === "Complete")
@@ -41,7 +42,7 @@ export const AllTimeTasksSummary = ({ projectTasks, adHocTasks }: AllTimeTasksSu
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="text-4xl font-bold">
-          {allCompletedTasks.length}
+          {privacyMode ? '***' : allCompletedTasks.length}
         </div>
         {dateRange && (
           <div className="flex items-center gap-2 text-sm opacity-90">

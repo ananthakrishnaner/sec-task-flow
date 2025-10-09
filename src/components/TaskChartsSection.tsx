@@ -4,6 +4,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, 
 
 interface TaskChartsSectionProps {
   metrics: TaskMetrics;
+  privacyMode?: boolean;
 }
 
 const COLORS = {
@@ -22,7 +23,12 @@ const ENHANCED_COLORS = {
   'Complete': '#10b981'
 };
 
-export const TaskChartsSection = ({ metrics }: TaskChartsSectionProps) => {
+export const TaskChartsSection = ({ metrics, privacyMode = false }: TaskChartsSectionProps) => {
+  
+  // If privacy mode is on, hide charts completely
+  if (privacyMode) {
+    return null;
+  }
   const statusData = Object.entries(metrics.statusDistribution).map(([status, count]) => ({
     name: status,
     value: count,

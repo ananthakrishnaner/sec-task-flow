@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown, Bell } from "lucide-react";
+import { Shield, Plus, BarChart3, Download, Settings as SettingsIcon, FileSpreadsheet, FileText, ArrowLeft, FileDown, Bell, Eye, EyeOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
@@ -36,6 +36,7 @@ const Index = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [currentView, setCurrentView] = useState<'dashboard' | 'settings'>('dashboard');
   const [activeTab, setActiveTab] = useState('project');
+  const [privacyMode, setPrivacyMode] = useState(false);
   const [exportOptions, setExportOptions] = useState<ExportOptions>({
     includeProjectTasks: true,
     includeAdHocTasks: true,
@@ -414,6 +415,20 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center gap-1 sm:gap-3 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setPrivacyMode(!privacyMode)}
+                className="h-9 w-9"
+                title={privacyMode ? "Show numbers" : "Hide numbers"}
+              >
+                {privacyMode ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle privacy mode</span>
+              </Button>
               <ThemeToggle />
               
               <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
@@ -546,15 +561,15 @@ const Index = () => {
         {/* All-Time Summary and Metrics Dashboard */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
           <div className="lg:col-span-1">
-            <AllTimeTasksSummary projectTasks={projectTasks} adHocTasks={adHocTasks} />
+            <AllTimeTasksSummary projectTasks={projectTasks} adHocTasks={adHocTasks} privacyMode={privacyMode} />
           </div>
           <div className="lg:col-span-3">
-            <DashboardMetrics metrics={metrics} />
+            <DashboardMetrics metrics={metrics} privacyMode={privacyMode} />
           </div>
         </div>
 
         {/* Charts Section */}
-        <TaskChartsSection metrics={metrics} />
+        <TaskChartsSection metrics={metrics} privacyMode={privacyMode} />
 
         {/* Task Management Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
