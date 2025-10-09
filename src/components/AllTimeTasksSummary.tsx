@@ -17,12 +17,14 @@ export const AllTimeTasksSummary = ({ projectTasks, adHocTasks }: AllTimeTasksSu
   const getDateRange = () => {
     if (allCompletedTasks.length === 0) return null;
 
-    const dates = allCompletedTasks.map(task => new Date(task.updatedAt));
-    const earliestDate = new Date(Math.min(...dates.map(d => d.getTime())));
+    const startDates = allCompletedTasks.map(task => 
+      new Date('startDate' in task ? task.startDate : task.createdAt)
+    );
+    const earliestStartDate = new Date(Math.min(...startDates.map(d => d.getTime())));
     const today = new Date();
 
     return {
-      from: format(earliestDate, 'MMM dd, yyyy'),
+      from: format(earliestStartDate, 'MMM dd, yyyy'),
       to: format(today, 'MMM dd, yyyy')
     };
   };
