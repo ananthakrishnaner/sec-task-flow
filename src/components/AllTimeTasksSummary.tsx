@@ -33,7 +33,7 @@ export const AllTimeTasksSummary = ({ projectTasks, adHocTasks, privacyMode = fa
   const dateRange = getDateRange();
 
   return (
-    <Card className="bg-gradient-primary shadow-elevated border-0 text-primary-foreground">
+    <Card className="bg-gradient-primary shadow-elevated border-0 text-primary-foreground hover:shadow-glow hover:scale-[1.02] transition-all duration-200">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-semibold">
           <CheckCircle className="h-5 w-5" />

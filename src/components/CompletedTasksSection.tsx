@@ -121,7 +121,7 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
   };
 
   const renderProjectTask = (task: ProjectTask) => (
-    <Card key={task.id} className="bg-card border-border hover:shadow-card transition-shadow">
+    <Card key={task.id} className="bg-card border-border hover:shadow-elevated hover:scale-[1.01] transition-all duration-200">
       <CardContent className="p-4 sm:p-6">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
@@ -177,7 +177,7 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
   );
 
   const renderAdHocTask = (task: AdHocTask) => (
-    <Card key={task.id} className="bg-card border-border hover:shadow-card transition-shadow">
+    <Card key={task.id} className="bg-card border-border hover:shadow-elevated hover:scale-[1.01] transition-all duration-200">
       <CardContent className="p-4 sm:p-6">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">

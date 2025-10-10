@@ -10,7 +10,7 @@ interface DashboardMetricsProps {
 export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetricsProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4 mb-4 sm:mb-6">
-      <Card className="bg-card-elevated shadow-card border-border">
+      <Card className="bg-card-elevated shadow-card border-border hover:shadow-elevated hover:scale-[1.02] transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4">
           <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Total Tasks</CardTitle>
           <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
@@ -25,7 +25,7 @@ export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetr
         </CardContent>
       </Card>
 
-      <Card className="bg-card-elevated shadow-card border-border">
+      <Card className="bg-card-elevated shadow-card border-border hover:shadow-elevated hover:scale-[1.02] transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4">
           <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Completed</CardTitle>
           <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success" />
@@ -40,7 +40,7 @@ export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetr
         </CardContent>
       </Card>
 
-      <Card className="bg-card-elevated shadow-card border-border">
+      <Card className="bg-card-elevated shadow-card border-border hover:shadow-elevated hover:scale-[1.02] transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4">
           <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">In Progress</CardTitle>
           <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
@@ -55,7 +55,7 @@ export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetr
         </CardContent>
       </Card>
 
-      <Card className="bg-card-elevated shadow-card border-border">
+      <Card className="bg-card-elevated shadow-card border-border hover:shadow-elevated hover:scale-[1.02] transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4">
           <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Blocked</CardTitle>
           <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-destructive" />
@@ -70,7 +70,7 @@ export const DashboardMetrics = ({ metrics, privacyMode = false }: DashboardMetr
         </CardContent>
       </Card>
 
-      <Card className="bg-card-elevated shadow-card border-border">
+      <Card className="bg-card-elevated shadow-card border-border hover:shadow-elevated hover:scale-[1.02] transition-all duration-200">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-4">
           <CardTitle className="text-xs sm:text-sm font-medium text-muted-foreground">Weekly Trend</CardTitle>
           <TrendingUp className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-accent" />
