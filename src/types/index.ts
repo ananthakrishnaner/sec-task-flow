@@ -20,6 +20,7 @@ export interface AdHocTask {
   description: string;
   dueDate: string;
   status: TaskStatus;
+  order: number;
   createdAt: string;
   updatedAt: string;
 }

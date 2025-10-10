@@ -243,12 +243,13 @@ const Index = () => {
     }
   };
 
-  const handleAddAdHocTask = async (taskData: Omit<AdHocTask, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => {
+  const handleAddAdHocTask = async (taskData: Omit<AdHocTask, 'id' | 'status' | 'order' | 'createdAt' | 'updatedAt'>) => {
     try {
       const newTask: AdHocTask = {
         ...taskData,
         id: uuid(),
         status: "To Do",
+        order: adHocTasks.length + 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -634,7 +635,7 @@ const Index = () => {
             </div>
           </div>
 
-          <TabsContent value="project" className="space-y-6">
+          <TabsContent value="project" className="space-y-6 animate-fade-in">
             <ProjectTaskForm 
               onSubmit={handleAddProjectTask}
               isVisible={showProjectForm}
@@ -647,7 +648,7 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="current" className="space-y-6">
+          <TabsContent value="current" className="space-y-6 animate-fade-in">
             <Card className="bg-card shadow-card border-border">
               <CardHeader>
                 <CardTitle className="text-foreground">Current Tasks (Non-Completed)</CardTitle>
@@ -684,7 +685,7 @@ const Index = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="adhoc" className="space-y-6">
+          <TabsContent value="adhoc" className="space-y-6 animate-fade-in">
             <AdHocTaskForm 
               onSubmit={handleAddAdHocTask}
               isVisible={showAdHocForm}
@@ -696,28 +697,28 @@ const Index = () => {
             />
           </TabsContent>
 
-          <TabsContent value="completed" className="space-y-6">
+          <TabsContent value="completed" className="space-y-6 animate-fade-in">
             <CompletedTasksSection 
               projectTasks={projectTasks}
               adHocTasks={adHocTasks}
             />
           </TabsContent>
 
-          <TabsContent value="upcoming" className="space-y-6">
+          <TabsContent value="upcoming" className="space-y-6 animate-fade-in">
             <UpcomingTasksNotification 
               projectTasks={projectTasks} 
               adHocTasks={adHocTasks} 
             />
           </TabsContent>
 
-          <TabsContent value="detailed" className="space-y-6">
+          <TabsContent value="detailed" className="space-y-6 animate-fade-in">
             <DetailedProgressDashboard 
               projectTasks={projectTasks}
               adHocTasks={adHocTasks}
             />
           </TabsContent>
 
-          <TabsContent value="analytics" className="space-y-6">
+          <TabsContent value="analytics" className="space-y-6 animate-fade-in">
             <AdvancedAnalytics 
               projectTasks={projectTasks}
               adHocTasks={adHocTasks}

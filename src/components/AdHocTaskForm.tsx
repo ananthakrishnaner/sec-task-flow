@@ -12,7 +12,7 @@ import { AdHocTask } from "@/types";
 import { cn } from "@/lib/utils";
 
 interface AdHocTaskFormProps {
-  onSubmit: (task: Omit<AdHocTask, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (task: Omit<AdHocTask, 'id' | 'status' | 'order' | 'createdAt' | 'updatedAt'>) => void;
   isVisible: boolean;
   onCancel: () => void;
 }
