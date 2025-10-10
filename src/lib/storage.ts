@@ -287,42 +287,94 @@ export const storageService = {
     URL.revokeObjectURL(url);
   },
 
-  // Import data from JSON file
+  // Import data from JSON file with intelligent merging
   async importData(jsonData: string): Promise<void> {
     try {
-      const data = JSON.parse(jsonData);
+      const importedData = JSON.parse(jsonData);
       
       // Validate imported data structure
-      if (!data || typeof data !== 'object') {
+      if (!importedData || typeof importedData !== 'object') {
         throw new Error('Invalid JSON format');
       }
       
-      if (!Array.isArray(data.projectTasks)) {
+      if (!Array.isArray(importedData.projectTasks)) {
         throw new Error('Missing or invalid projectTasks array');
       }
       
-      if (!Array.isArray(data.adHocTasks)) {
+      if (!Array.isArray(importedData.adHocTasks)) {
         throw new Error('Missing or invalid adHocTasks array');
       }
       
-      if (!data.metadata || typeof data.metadata !== 'object') {
-        data.metadata = {
+      if (!importedData.metadata || typeof importedData.metadata !== 'object') {
+        importedData.metadata = {
           lastUpdated: new Date().toISOString(),
           version: "1.0.0"
         };
       }
       
       // Validate task structures
-      this.validateTaskStructures(data);
+      this.validateTaskStructures(importedData);
       
-      // Save the imported data
-      await this.saveData(data);
+      // Load existing data to merge with imported data
+      const existingData = await this.loadData();
       
-      console.log('Data imported successfully');
+      // Merge project tasks - keep newest version of each task by ID
+      const mergedProjectTasks = this.mergeTasks(existingData.projectTasks, importedData.projectTasks);
+      
+      // Merge ad-hoc tasks - keep newest version of each task by ID
+      const mergedAdHocTasks = this.mergeTasks(existingData.adHocTasks, importedData.adHocTasks);
+      
+      const mergedData: TaskData = {
+        projectTasks: mergedProjectTasks,
+        adHocTasks: mergedAdHocTasks,
+        metadata: {
+          lastUpdated: new Date().toISOString(),
+          version: importedData.metadata.version || "1.0.0"
+        }
+      };
+      
+      // Save the merged data
+      await this.saveData(mergedData);
+      
+      console.log(`Data imported and merged successfully. Project tasks: ${mergedProjectTasks.length}, Ad-hoc tasks: ${mergedAdHocTasks.length}`);
     } catch (error) {
       console.error('Error importing data:', error);
       throw new Error(`Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  },
+
+  // Merge tasks intelligently - keep the newest version of each task
+  mergeTasks<T extends ProjectTask | AdHocTask>(existingTasks: T[], importedTasks: T[]): T[] {
+    const taskMap = new Map<string, T>();
+    
+    // Add all existing tasks to map
+    existingTasks.forEach(task => {
+      taskMap.set(task.id, task);
+    });
+    
+    // Merge or add imported tasks, keeping the newest version
+    importedTasks.forEach(importedTask => {
+      const existingTask = taskMap.get(importedTask.id);
+      
+      if (!existingTask) {
+        // New task, add it
+        taskMap.set(importedTask.id, importedTask);
+      } else {
+        // Task exists, keep the one with the latest updatedAt timestamp
+        const existingDate = new Date(existingTask.updatedAt).getTime();
+        const importedDate = new Date(importedTask.updatedAt).getTime();
+        
+        if (importedDate > existingDate) {
+          // Imported task is newer, use it
+          taskMap.set(importedTask.id, importedTask);
+          console.log(`Updated task ${importedTask.id} with newer imported version`);
+        } else {
+          console.log(`Kept existing task ${importedTask.id} as it's newer`);
+        }
+      }
+    });
+    
+    return Array.from(taskMap.values());
   },
 
   // Validate task structures

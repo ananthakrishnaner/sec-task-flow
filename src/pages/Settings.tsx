@@ -71,12 +71,21 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
     try {
       const fileContent = await file.text();
       
-      // Use the enhanced import method
+      // Get current counts before import
+      const beforeData = await storageService.getAllData();
+      const beforeCount = beforeData.projectTasks.length + beforeData.adHocTasks.length;
+      
+      // Use the enhanced import method with intelligent merging
       await storageService.importData(fileContent);
+      
+      // Get new counts after import
+      const afterData = await storageService.getAllData();
+      const afterCount = afterData.projectTasks.length + afterData.adHocTasks.length;
+      const addedCount = afterCount - beforeCount;
       
       toast({
         title: "Import Successful",
-        description: `Successfully imported ${file.name}. Data has been updated.`,
+        description: `Data merged successfully! ${addedCount > 0 ? `${addedCount} new tasks added.` : 'All tasks up to date.'} Total: ${afterCount} tasks.`,
       });
 
       // Notify parent to refresh data
@@ -205,12 +214,13 @@ export const Settings = ({ onDataImported, onGoBack }: SettingsProps) => {
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
                 Import a previously saved JSON backup file to restore your data. 
-                This will merge with or replace current data depending on the import option.
+                The system will intelligently merge imported data with existing data.
               </p>
               <div className="p-3 bg-accent/50 border border-accent rounded-lg">
                 <p className="text-sm text-accent-foreground">
                   <strong>Supported formats:</strong> JSON files (.json) up to 10MB<br/>
-                  <strong>Import behavior:</strong> Imported data will completely replace existing data
+                  <strong>Smart merge:</strong> New tasks are added, existing tasks keep their newest version based on update date<br/>
+                  <strong>Data safety:</strong> Your completed tasks won't be lost when importing older backups
                 </p>
               </div>
               <div className="space-y-2">
