@@ -226,15 +226,18 @@ export const CompletedTasksSection = ({ projectTasks, adHocTasks }: CompletedTas
     <div className="space-y-6">
       <Card className="bg-card shadow-card border-border">
         <CardHeader className="p-4 sm:p-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <CardTitle className="text-foreground flex items-center gap-2 text-lg sm:text-xl">
               <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-success" />
-              <span>Completed Tasks</span>
+              <span>All-Time Completed Tasks</span>
             </CardTitle>
             <Badge variant="outline" className="text-base">
               {allCompletedTasks.length} Total
             </Badge>
           </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Complete history of all finished tasks
+          </p>
         </CardHeader>
         <CardContent className="p-4 sm:p-6 pt-0">
           {allCompletedTasks.length === 0 ? (
