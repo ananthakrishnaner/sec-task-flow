@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { TaskStatusBadge } from "@/components/TaskStatusBadge";
 import { ProjectTaskEditForm } from "@/components/ProjectTaskEditForm";
-import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit, Trash2 } from "lucide-react";
+import { Calendar, CheckCircle, Clock, User, Target, FileText, Plus, Edit, Trash2, GripVertical } from "lucide-react";
 import { format } from "date-fns";
 import { activityLogger } from "@/lib/activityLogger";
 import { 
@@ -143,19 +143,22 @@ const SortableTaskItem = ({ task, onUpdateTask, onDeleteTask, allTasks }: Sortab
       className="bg-card shadow-card border-border mb-4 hover:shadow-elevated transition-all duration-300"
     >
       <CardHeader className="bg-gradient-surface border-b border-border">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-2">
           <div 
             {...attributes} 
             {...listeners}
-            className="flex items-center gap-3 cursor-grab active:cursor-grabbing flex-1 mr-4"
+            className="cursor-grab active:cursor-grabbing flex-shrink-0 p-1 hover:bg-accent/10 rounded"
           >
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded bg-primary/20 text-primary text-xs flex items-center justify-center font-bold">
+            <GripVertical className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+              <div className="w-6 h-6 rounded bg-primary/20 text-primary text-xs flex items-center justify-center font-bold flex-shrink-0">
                 {task.priority}
               </div>
-              <CardTitle className="text-foreground">{task.taskName}</CardTitle>
+              <CardTitle className="text-foreground truncate">{task.taskName}</CardTitle>
             </div>
-            <TaskStatusBadge status={task.status} />
+            <TaskStatusBadge status={task.status} className="flex-shrink-0" />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {task.securitySignOff && (
